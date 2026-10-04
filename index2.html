@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pre-Op Assessment Trainer</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root{
+  --bg:#F6F4EE;
+  --surface:#FFFFFF;
+  --surface-2:#EFEBE0;
+  --ink:#1C2B33;
+  --ink-soft:#5B6B72;
+  --line:#DCD5C3;
+  --teal:#2D6B66;
+  --teal-deep:#1B3E3B;
+  --teal-pale:#E4EEEC;
+  --amber:#C77C34;
+  --amber-pale:#F7E9D8;
+  --rose:#AE4B44;
+  --rose-pale:#F5E2E0;
+  --green:#4C7A52;
+  --green-pale:#E4EDE1;
+  --radius:10px;
+  --shadow: 0 1px 2px rgba(28,43,51,0.06), 0 6px 20px rgba(28,43,51,0.06);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Inter',sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+#app{max-width:1000px;margin:0 auto;padding:20px 16px 60px;}
+
+h1,h2,h3{font-family:'Source Serif 4',serif;margin:0;}
+.eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--teal);
+  font-weight:700;
+}
+.muted{color:var(--ink-soft);}
+button{font-family:'Inter',sans-serif;cursor:pointer;}
+button:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:2px;}
+
+/* ---------- HEADER ---------- */
+.masthead{
+  display:flex; justify-content:space-between; align-items:flex-end;
+  border-bottom:2px solid var(--ink); padding-bottom:14px; margin-bottom:28px;
+}
+.masthead h1{font-size:26px; font-weight:700; color:var(--ink);}
+.masthead .tag{font-size:13px; color:var(--ink-soft); margin-top:4px;}
+.masthead .brand-mark{
+  font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink-soft);
+  text-align:right; line-height:1.5;
+}
+
+/* ---------- SELECT SCREEN ---------- */
+.intro{margin-bottom:26px; max-width:640px;}
+.intro p{color:var(--ink-soft); line-height:1.6; font-size:15px;}
+
+.primer-callout{
+  background:var(--teal-pale); border:1px solid #C3DAD6; border-radius:var(--radius);
+  padding:16px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px;
+  margin-bottom:22px;
+}
+@media (max-width:560px){.primer-callout{flex-direction:column; align-items:flex-start;} .primer-callout .begin-btn{width:100%;}}
+
+.setup-card{
+  background:var(--surface); border:1px solid var(--line); border-left:5px solid var(--amber);
+  border-radius:var(--radius); padding:18px 20px; margin-bottom:22px; box-shadow:var(--shadow);
+}
+.setup-card.ready{border-left-color:var(--green);}
+.setup-card h3{font-size:16px; margin-bottom:4px;}
+.setup-card .setup-hint{font-size:13px; color:var(--ink-soft); line-height:1.55; margin-bottom:12px;}
+.setup-card .setup-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+.setup-card input[type=password]{
+  flex:1; min-width:220px; border:1px solid var(--line); border-radius:8px; padding:10px 12px;
+  font-size:13.5px; font-family:'Inter',sans-serif;
+}
+.setup-card .save-key-btn{
+  background:var(--teal); color:#fff; border:none; border-radius:8px; padding:10px 16px; font-size:13.5px; font-weight:600; white-space:nowrap;
+}
+
+.chart-rack{display:flex; flex-direction:column; gap:14px;}
+.chart-card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-left:5px solid var(--teal);
+  border-radius:var(--radius);
+  padding:18px 20px;
+  box-shadow:var(--shadow);
+  display:flex; justify-content:space-between; align-items:center; gap:16px;
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.chart-card:hover{transform:translateY(-2px); box-shadow:0 10px 26px rgba(28,43,51,0.1);}
+.chart-card .tab{
+  font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.1em;
+  color:var(--teal); text-transform:uppercase; margin-bottom:6px; font-weight:700;
+}
+.chart-card h3{font-size:19px;}
+.chart-card .meta{color:var(--ink-soft); font-size:13.5px; margin-top:4px;}
+.chart-card .proc{color:var(--ink); font-size:14px; margin-top:8px; font-weight:500;}
+.begin-btn{
+  background:var(--teal); color:#fff; border:none; border-radius:8px;
+  padding:10px 18px; font-size:14px; font-weight:600; white-space:nowrap;
+}
+.begin-btn:hover{background:var(--teal-deep);}
+
+@media (max-width:560px){
+  .chart-card{flex-direction:column; align-items:flex-start;}
+  .begin-btn{width:100%;}
+}
+
+/* ---------- INTERVIEW SCREEN ---------- */
+.monitor{
+  background:var(--teal-deep); color:#EAF3F1; border-radius:var(--radius);
+  padding:14px 18px; display:flex; flex-wrap:wrap; gap:18px; align-items:center;
+  justify-content:space-between; margin-bottom:16px;
+}
+.monitor .who h2{color:#fff; font-size:19px;}
+.monitor .who .sub{font-size:12.5px; color:#9FC4BE; font-family:'JetBrains Mono',monospace; margin-top:3px;}
+.monitor .exit-btn{
+  background:var(--amber); border:none; color:#241505; font-weight:700;
+  padding:9px 14px; border-radius:8px; font-size:13px;
+}
+
+.interview-grid{display:grid; grid-template-columns:1.5fr 1fr; gap:16px;}
+@media (max-width:760px){.interview-grid{grid-template-columns:1fr;}}
+
+.panel{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow); overflow:hidden;
+}
+.panel-head{
+  padding:12px 16px; border-bottom:1px solid var(--line); background:var(--surface-2);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.panel-head h3{font-size:14px; font-family:'JetBrains Mono',monospace; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft);}
+
+.transcript{
+  height:380px; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px;
+}
+.bubble{max-width:82%; padding:10px 13px; border-radius:12px; font-size:14.5px; line-height:1.5;}
+.bubble.student{align-self:flex-end; background:var(--teal-pale); color:var(--teal-deep); border-bottom-right-radius:3px;}
+.bubble.patient{align-self:flex-start; background:var(--surface-2); color:var(--ink); border-bottom-left-radius:3px;}
+.bubble .role-tag{display:block; font-family:'JetBrains Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:.08em; opacity:.6; margin-bottom:3px;}
+.bubble.thinking{font-style:italic; color:var(--ink-soft);}
+
+.input-row{display:flex; gap:8px; padding:12px 14px; border-top:1px solid var(--line); background:var(--surface-2);}
+.input-row input[type=text]{
+  flex:1; border:1px solid var(--line); border-radius:8px; padding:10px 12px; font-size:14.5px; font-family:'Inter',sans-serif;
+}
+.icon-btn{
+  border:1px solid var(--line); background:#fff; border-radius:8px; width:42px; height:42px;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:17px;
+}
+.icon-btn.active{background:var(--rose); border-color:var(--rose); color:#fff;}
+.send-btn{
+  background:var(--teal); color:#fff; border:none; border-radius:8px; padding:0 16px; font-weight:600; font-size:14px;
+}
+.send-btn:disabled{opacity:.5; cursor:default;}
+
+.exam-list{padding:10px; display:flex; flex-direction:column; gap:8px; max-height:452px; overflow-y:auto;}
+.exam-item{
+  border:1px solid var(--line); border-radius:8px; background:#fff; overflow:hidden;
+}
+.exam-item button.exam-toggle{
+  width:100%; text-align:left; background:none; border:none; padding:11px 13px;
+  display:flex; justify-content:space-between; align-items:center; font-size:13.5px; font-weight:600; color:var(--ink);
+}
+.exam-item.done button.exam-toggle{color:var(--green);}
+.exam-item .checkmark{font-family:'JetBrains Mono',monospace; font-size:13px;}
+.exam-item .finding{
+  padding:0 13px 12px; font-size:13.5px; color:var(--ink-soft); line-height:1.5; display:none;
+}
+.exam-item.open .finding{display:block;}
+
+.voice-note{font-size:12px; color:var(--ink-soft); padding:8px 14px 0;}
+
+.step-badge{
+  font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+  background:var(--amber); color:#241505; padding:6px 11px; border-radius:20px; font-weight:700; white-space:nowrap;
+}
+.step-badge.done{background:var(--green); color:#fff;}
+.exit-btn:disabled{opacity:.45; cursor:not-allowed;}
+
+.intro-banner{
+  background:var(--amber-pale); border:1px solid #E4C79B; color:#6B4114;
+  padding:11px 15px; border-radius:var(--radius); font-size:13.5px; line-height:1.5; margin-bottom:14px;
+}
+
+.locked-panel .exam-list{opacity:.35; pointer-events:none;}
+.lock-note{
+  padding:10px 16px; font-size:12.5px; color:var(--ink-soft);
+  border-bottom:1px solid var(--line); background:var(--surface-2);
+}
+
+.voice-settings{
+  padding:14px 16px; border-bottom:1px solid var(--line); background:var(--surface-2);
+  display:flex; flex-direction:column; gap:10px;
+}
+.vs-row{display:flex; flex-direction:column; gap:5px;}
+.vs-row label{font-size:12px; font-weight:600; color:var(--ink-soft);}
+.vs-row input[type=password], .vs-row select{
+  border:1px solid var(--line); border-radius:7px; padding:8px 10px; font-size:13.5px; font-family:'Inter',sans-serif; background:#fff;
+}
+.vs-hint{font-size:12px; color:var(--ink-soft); line-height:1.5;}
+.vs-actions{display:flex; gap:8px;}
+.vs-actions button{
+  border:1px solid var(--line); background:#fff; border-radius:7px; padding:7px 12px; font-size:12.5px; font-weight:600; color:var(--ink);
+}
+.vs-actions button.primary{background:var(--teal); color:#fff; border-color:var(--teal);}
+.vs-tag{display:inline-block; font-family:'JetBrains Mono',monospace; font-size:10px; padding:2px 7px; border-radius:10px; background:var(--green-pale); color:var(--green); font-weight:700; margin-left:6px;}
+
+/* ---------- REPORT SCREEN ---------- */
+.score-hero{
+  background:var(--teal-deep); color:#fff; border-radius:var(--radius); padding:26px 24px;
+  display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:20px; flex-wrap:wrap;
+}
+.score-hero .num{font-family:'Source Serif 4',serif; font-size:56px; font-weight:700; line-height:1;}
+.score-hero .num span{font-size:22px; color:#9FC4BE;}
+.score-hero .label{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#9FC4BE; margin-bottom:6px;}
+.score-hero .verdict{font-size:15px; max-width:420px; color:#EAF3F1; line-height:1.5;}
+
+.domains{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-bottom:20px;}
+.domain-card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px;}
+.domain-card .dname{font-size:12.5px; font-weight:600; color:var(--ink-soft); margin-bottom:8px;}
+.domain-card .dscore{font-family:'Source Serif 4',serif; font-size:22px; font-weight:700; margin-bottom:8px;}
+.bar-track{height:6px; background:var(--surface-2); border-radius:4px; overflow:hidden;}
+.bar-fill{height:100%; background:var(--teal); border-radius:4px;}
+
+.report-section{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; margin-bottom:14px;}
+.report-section h4{font-size:13px; font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:.07em; margin-bottom:10px;}
+.report-section.critical h4{color:var(--rose);}
+.report-section.strength h4{color:var(--green);}
+.report-section.teach h4{color:var(--teal);}
+.report-section ul{margin:0; padding-left:18px; line-height:1.7; font-size:14.5px;}
+.report-section.critical{background:var(--rose-pale); border-color:#E3C3BF;}
+.report-section.strength{background:var(--green-pale); border-color:#C9DCC5;}
+.report-section.teach{background:var(--teal-pale); border-color:#C3DAD6;}
+
+.again-btn{
+  background:var(--ink); color:#fff; border:none; border-radius:8px; padding:12px 20px;
+  font-weight:600; font-size:14.5px; margin-top:6px;
+}
+
+.loading-screen{text-align:center; padding:80px 20px; color:var(--ink-soft);}
+.spinner{
+  width:34px; height:34px; border:3px solid var(--line); border-top-color:var(--teal);
+  border-radius:50%; margin:0 auto 16px; animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.error-banner{background:var(--rose-pale); border:1px solid #E3C3BF; color:var(--rose); padding:10px 14px; border-radius:8px; font-size:13.5px; margin-bottom:14px;}
+
+/* ---------- BRIEFING SCREEN ---------- */
+.brief-sub{color:var(--ink-soft); font-size:14px; margin-top:4px;}
+.brief-intro{
+  background:var(--surface); border:1px solid var(--line); border-left:5px solid var(--teal);
+  border-radius:var(--radius); padding:18px 20px; margin:18px 0 22px; box-shadow:var(--shadow);
+  font-size:15px; line-height:1.65; color:var(--ink);
+}
+.brief-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin-bottom:22px;}
+.brief-card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow);}
+.brief-card .bicon{font-size:20px; margin-bottom:6px;}
+.brief-card h4{font-family:'Source Serif 4',serif; font-size:17px; margin-bottom:4px;}
+.brief-card .why{font-size:13px; color:var(--ink-soft); line-height:1.5; margin-bottom:10px; font-style:italic;}
+.brief-card ul{margin:0; padding-left:18px; font-size:13.5px; line-height:1.65; color:var(--ink);}
+.brief-card ul li{margin-bottom:3px;}
+
+.asa-box{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; margin-bottom:22px; box-shadow:var(--shadow);}
+.asa-box h4{font-family:'Source Serif 4',serif; font-size:16px; margin-bottom:10px;}
+table.asa-table{width:100%; border-collapse:collapse; font-size:13.5px;}
+table.asa-table td{padding:7px 6px; border-bottom:1px solid var(--line); vertical-align:top;}
+table.asa-table td.cls{font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--teal); white-space:nowrap; width:70px;}
+
+.brief-cta-row{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-top:6px;}
+.back-link{background:none; border:none; color:var(--ink-soft); font-size:13.5px; font-weight:600; text-decoration:underline; padding:0;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ============================= CASE DATA ============================= */
+const CASES = {
+  chen: {
+    id:'chen', tab:'ROOM 4 · ELECTIVE', name:'Maria Chen', age:45, sex:'female',
+    procedure:'Laparoscopic cholecystectomy',
+    summary:'Healthy 45F with symptomatic gallstones, elective surgery.',
+    chart:{
+      chiefComplaint:'Here for gallbladder removal surgery, recurring pain after eating fatty food.',
+      pmh:'Mild GERD (acid reflux), managed with omeprazole. No diabetes, no heart or lung disease, no asthma.',
+      psh:'None. Never had surgery before.',
+      anesthesiaHistory:'Never had anesthesia before, this would be her first time.',
+      medications:'Omeprazole 20mg once daily. Oral contraceptive pill.',
+      allergies:'No known drug allergies.',
+      familyHistory:"Her mother mentioned once, years ago, that she had 'some kind of bad reaction' during a surgery, but Maria doesn't know details and it's never come up as a problem for anyone else in the family. Not sure if it was nausea, an allergic thing, or something else — genuinely vague on this.",
+      socialHistory:'Non-smoker. Drinks wine occasionally, maybe 2-3 glasses a week. No recreational drug use. Works as a high school teacher.',
+      npoStatus:'Ate dinner last night around 7pm, nothing to eat or drink since midnight, procedure is this morning.',
+      reviewOfSystems:'No chest pain, no shortness of breath, no palpitations. Occasional heartburn if she eats late, otherwise nothing. No history of fainting.',
+      exam:{
+        vitals:'BP 118/76, HR 72 regular, RR 14, SpO2 99% on room air, Temp 36.7°C, BMI 24',
+        airway:'Mallampati class II, mouth opening 4cm, full natural dentition, no loose teeth, neck flexion/extension full and normal, thyromental distance normal (>6.5cm)',
+        heart:'Regular rate and rhythm, no murmurs, no jugular venous distension',
+        lungs:'Clear to auscultation bilaterally, no wheezes or crackles',
+        general:'Well-appearing, no acute distress, no edema'
+      }
+    },
+    keyHistoryItems:[
+      'Confirmed NPO status / last oral intake',
+      'Asked about drug allergies',
+      'Asked about prior anesthesia experience',
+      'Asked about family history of anesthesia problems',
+      'Asked about current medications',
+      'Asked about GERD / reflux (aspiration risk relevant to induction)',
+      'Screened for cardiac or pulmonary symptoms'
+    ],
+    keyExamItems:['airway','heart','lungs','vitals'],
+    asaClass:'ASA II (due to GERD)',
+    redFlag:'The vague family history of a "bad reaction" to anesthesia deserves a follow-up question — even though it turns out not to be a clear MH history here, a good student should try to pin it down rather than let it pass.',
+    teachingPoints:[
+      'This is a "straightforward" case designed to test thoroughness, not crisis recognition — the skill being tested is not missing anything even when nothing looks alarming.',
+      'A vague, non-specific family history of an anesthesia "reaction" should always be pursued further (what kind of reaction, was it a young relative, was there fever/muscle rigidity) rather than dismissed.',
+      'GERD raises aspiration risk and can influence induction technique (e.g., rapid sequence induction) — worth flagging even in a low-risk patient.'
+    ]
+  },
+
+  okafor: {
+    id:'okafor', tab:'ROOM 2 · SEMI-URGENT', name:'Robert Okafor', age:68, sex:'male',
+    procedure:'Open reduction internal fixation (ORIF) of hip fracture, after a fall',
+    summary:'68M with CAD, OSA, and a recently fallen fracture — a complex, higher-risk case.',
+    chart:{
+      chiefComplaint:"Fell at home this morning, can't put weight on his right leg, in a lot of pain. Here for hip surgery.",
+      pmh:'Hypertension, Type 2 diabetes (on oral meds), obstructive sleep apnea (uses CPAP at night, admits he has not been using it consistently the last several months — "it\'s uncomfortable"), coronary artery disease with a stent placed 2 years ago.',
+      psh:'Cardiac catheterization with stent placement 2 years ago. Appendectomy as a child.',
+      anesthesiaHistory:'Had general anesthesia for the stent-related procedure and for his appendectomy as a kid — no problems either time, as far as he remembers.',
+      medications:'Metoprolol 25mg twice daily, lisinopril 10mg daily, metformin 500mg twice daily, aspirin 81mg daily. He was also on clopidogrel after his stent but his cardiologist had him STOP it 5 days ago in preparation for an unrelated planned procedure — coincidentally, he fell before that procedure happened, so he is currently off clopidogrel but still on aspirin.',
+      allergies:'Penicillin — causes a rash.',
+      familyHistory:'Father had a heart attack in his 60s. Nothing relevant regarding anesthesia specifically.',
+      socialHistory:'Former smoker, quit 10 years ago, about a 30 pack-year history before that. Drinks alcohol rarely, maybe a beer on holidays. Retired mechanic.',
+      npoStatus:'Fell about 6 hours ago; he last ate breakfast around 3 hours before the fall, so roughly 9 hours ago now, and has had nothing since (traumatic/semi-urgent case, not a fully elective fasting window).',
+      reviewOfSystems:'Admits to occasional chest tightness when climbing stairs, goes away with rest — has not mentioned this to his cardiologist recently. Wife says he snores loudly and she has seen him stop breathing briefly during sleep. He feels tired during the day. No fevers, no recent illness.',
+      exam:{
+        vitals:'BP 152/94, HR 88 and occasionally irregular, RR 18, SpO2 94% on room air, Temp 37.0°C, BMI 34',
+        airway:'Mallampati class III, short thick neck, limited neck extension due to cervical arthritis, reduced thyromental distance (~5.5cm), one loose upper incisor noted',
+        heart:'Regular but occasionally irregular rhythm noted, no obvious murmur, no significant JVD',
+        lungs:'Mild bibasilar crackles that clear somewhat with cough, no wheezing',
+        general:'Uncomfortable due to hip pain, obese habitus, visible bruising to right hip'
+      }
+    },
+    keyHistoryItems:[
+      'Asked about OSA and CPAP compliance',
+      'Asked about cardiac history including the stent and any current chest pain/exertional symptoms',
+      'Clarified antiplatelet/anticoagulant status (aspirin vs. clopidogrel, timing)',
+      'Asked about NPO status given the traumatic/semi-urgent nature',
+      'Asked about drug allergies',
+      'Asked about diabetes control and medication timing',
+      'Asked about smoking history'
+    ],
+    keyExamItems:['airway','heart','lungs','vitals'],
+    asaClass:'ASA III (consider IV if exertional chest tightness represents unstable symptoms)',
+    redFlag:'Untreated/undertreated OSA plus a difficult-airway exam (Mallampati III, limited neck extension, short neck) plus new-ish exertional chest tightness in a patient with known CAD — this is the case\'s central teaching point: recognizing a difficult airway AND unclear cardiac stability before a semi-urgent case.',
+    teachingPoints:[
+      'Poor CPAP compliance in a known OSA patient meaningfully raises perioperative respiratory risk (STOP-BANG type reasoning) and should change the plan for opioid dosing/monitoring.',
+      'The Mallampati III + limited neck extension + reduced thyromental distance combination should prompt a "difficult airway" plan (equipment, backup, possibly awake technique) before induction.',
+      'New exertional chest tightness in a patient with a coronary stent is a red flag that may warrant more workup or cardiology input even in a semi-urgent case — balanced against the urgency of fixing a hip fracture (delayed fixation itself carries risk).',
+      'Recent antiplatelet changes (stopped clopidogrel, still on aspirin) affect both bleeding risk for surgery/regional anesthesia and cardiac stent thrombosis risk — this needs to be explicitly clarified, not assumed.'
+    ]
+  },
+
+  desai: {
+    id:'desai', tab:'ROOM 6 · ELECTIVE', name:'Priya Desai', age:24, sex:'female',
+    procedure:'Elective right knee arthroscopy',
+    summary:'Young, generally healthy 24F — but with a family history worth chasing down.',
+    chart:{
+      chiefComplaint:'Here for a scope of her right knee after a soccer injury, meniscus tear.',
+      pmh:'Mild asthma since childhood, uses an albuterol inhaler occasionally, last flare-up about 2 years ago, has never been hospitalized for it.',
+      psh:'None. This would be her first surgery.',
+      anesthesiaHistory:'Never had anesthesia herself.',
+      medications:'Albuterol inhaler as needed. A daily multivitamin.',
+      allergies:'No known drug allergies.',
+      familyHistory:"Her cousin on her mother's side died during a surgery as a child — family always described it vaguely as 'a bad reaction to the anesthesia medicine' and remembers hearing he had a 'really high fever' during the operation. She doesn't know more specifics like which relative's side exactly, what surgery, or what medications were used, but this has always stuck with her and makes her nervous about anesthesia.",
+      socialHistory:'Non-smoker, social alcohol use on weekends, no recreational drugs. College student, works part-time as a barista.',
+      npoStatus:'Fasting appropriately — nothing to eat or drink since midnight, surgery scheduled this morning.',
+      reviewOfSystems:'Occasional wheeze with exercise, otherwise no cardiac or pulmonary symptoms. No fevers, no muscle problems, no prior issues with heat.',
+      exam:{
+        vitals:'BP 110/70, HR 78 regular, RR 16, SpO2 100% on room air, Temp 36.8°C, BMI 22',
+        airway:'Mallampati class I, mouth opening excellent, full dentition, full neck range of motion, normal thyromental distance',
+        heart:'Regular rate and rhythm, no murmurs',
+        lungs:'Clear bilaterally, mild expiratory wheeze noted only with forced exhalation',
+        general:'Well-appearing, anxious affect, no acute distress'
+      }
+    },
+    keyHistoryItems:[
+      'Asked about family history in detail (not just surface-level "any family problems with anesthesia?")',
+      'Followed up on the cousin\'s death — tried to get specifics (fever, muscle rigidity, age, which surgery)',
+      'Asked about her own asthma control and triggers',
+      'Asked about NPO status',
+      'Asked about drug allergies',
+      'Asked about her own anesthesia history'
+    ],
+    keyExamItems:['airway','heart','lungs','vitals'],
+    asaClass:'ASA II (asthma) — with a pending malignant hyperthermia risk flag requiring further workup before proceeding',
+    redFlag:'A family history strongly suggestive of malignant hyperthermia (childhood surgical death with high fever) is the entire point of this case. A student who does not dig into a vague "bad reaction to anesthesia" family history, or who does not recognize fever + death during surgery as an MH red flag, has missed the critical finding of this encounter.',
+    teachingPoints:[
+      'Never accept a vague family history of an anesthesia "reaction" at face value — always ask what kind of reaction, and specifically about fever, muscle rigidity, and whether the relative survived.',
+      'A childhood surgical death associated with high fever is a classic story for malignant hyperthermia (MH) and should trigger consideration of a non-triggering anesthetic technique (avoiding succinylcholine and volatile agents) and possibly referral for MH testing before an elective case.',
+      'Mild, well-controlled asthma is a minor consideration here compared to the family history — this case rewards students who don\'t get anchored on the "obvious" finding (asthma) and miss the subtler, more dangerous one.'
+    ]
+  }
+};
+
+/* ============================= INSTRUCTOR CONFIG =============================
+   Set this once after deploying the Cloudflare Worker proxy (see
+   preop-proxy-worker.js for setup steps). Every student uses this same URL —
+   it is not secret, it's just the address of your class's relay server. */
+const PROXY_URL = "PASTE_YOUR_WORKER_URL_HERE";
+
+/* ============================= SAVED KEYS (this device/browser only) ============================= */
+function loadSavedKey(storageKey){
+  try{ return localStorage.getItem(storageKey) || ''; }catch(e){ return ''; }
+}
+function saveKey(storageKey, value){
+  try{
+    if(value){ localStorage.setItem(storageKey, value); }
+    else{ localStorage.removeItem(storageKey); }
+  }catch(e){ /* private browsing or storage blocked — key just won't persist */ }
+}
+
+/* ============================= STATE ============================= */
+let state = {
+  screen:'select',
+  caseId:null,
+  introduced:false,
+  messages:[],       // {role:'user'|'assistant', text}
+  examOpen:{},        // itemKey -> bool open
+  examDone:new Set(),
+  voiceOn:true,
+  voiceSettingsOpen:false,
+  classPasscode: loadSavedKey('preop_class_passcode'),
+  elevenLabsKey: loadSavedKey('preop_elevenlabs_key'),
+  browserVoiceURI:'',
+  micStatus:null,
+  listening:false,
+  sending:false,
+  grading:false,
+  report:null,
+  error:null,
+  startedAt:null
+};
+
+let recognition=null;
+try{
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(SR){
+    recognition = new SR();
+    recognition.continuous=false;
+    recognition.interimResults=false;
+    recognition.lang='en-US';
+  }
+}catch(e){recognition=null;}
+
+// iPhone/iPad: Safari/WebKit never implements SpeechRecognition, even in
+// "Chrome" (every iOS browser is required to use WebKit under the hood), so
+// the app's own mic button can't work there. iOS still has its own built-in
+// dictation on the keyboard itself, so point students to that instead.
+function isIOS(){
+  const ua = navigator.userAgent || '';
+  const iOSDevice = /iPad|iPhone|iPod/.test(ua);
+  // iPadOS 13+ reports as "Macintosh" but has touch support, unlike a real Mac
+  const iPadOS13Plus = /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
+  return iOSDevice || iPadOS13Plus;
+}
+
+/* ============================= API HELPERS ============================= */
+async function callClaude(system, messages, maxTokens){
+  if(!PROXY_URL || PROXY_URL.indexOf('PASTE_YOUR_WORKER_URL_HERE')!==-1){
+    const err = new Error("This app isn't connected to the class AI service yet — the instructor still needs to set PROXY_URL in the file (see preop-proxy-worker.js for setup steps).");
+    err.code = 'NO_PROXY';
+    throw err;
+  }
+  if(!state.classPasscode){
+    const err = new Error("Enter the class passcode your instructor gave you.");
+    err.code = 'NO_KEY';
+    throw err;
+  }
+  let response;
+  try{
+    response = await fetch(PROXY_URL, {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "X-Class-Passcode": state.classPasscode
+      },
+      body: JSON.stringify({
+        max_tokens: maxTokens || 1000,
+        system: system,
+        messages: messages
+      })
+    });
+  }catch(networkErr){
+    const err = new Error("Couldn't reach the class AI service (network blocked, or you're inside Claude's in-chat preview, which can't make outside requests). Open this file directly in a browser tab and try again.");
+    err.code='NETWORK';
+    throw err;
+  }
+  if(!response.ok){
+    let detail='';
+    try{ const body = await response.json(); detail = body && body.error && body.error.message ? body.error.message : ''; }catch(e){}
+    if(response.status===401){
+      const err = new Error("That class passcode wasn't recognized. Double-check it with your instructor.");
+      err.code='UNAUTHORIZED';
+      throw err;
+    }
+    const err = new Error(detail || ("Request failed: HTTP "+response.status));
+    err.code='HTTP_'+response.status;
+    throw err;
+  }
+  const data = await response.json();
+  const textBlock = data.content.find(c=>c.type==='text');
+  return textBlock ? textBlock.text : '';
+}
+
+function patientSystemPrompt(c){
+  return `You are role-playing as a patient named ${c.name}, a ${c.age}-year-old ${c.sex}, who is about to have the following procedure: ${c.procedure}. A fourth-year medical student is interviewing you as part of a pre-operative history and physical exam. This is a training simulation.
+
+Your complete, ground-truth medical chart (the student cannot see this, only you know it) is below. Stay completely consistent with it for the entire conversation.
+
+CHIEF COMPLAINT: ${c.chart.chiefComplaint}
+PAST MEDICAL HISTORY: ${c.chart.pmh}
+PAST SURGICAL HISTORY: ${c.chart.psh}
+ANESTHESIA HISTORY: ${c.chart.anesthesiaHistory}
+MEDICATIONS: ${c.chart.medications}
+ALLERGIES: ${c.chart.allergies}
+FAMILY HISTORY: ${c.chart.familyHistory}
+SOCIAL HISTORY: ${c.chart.socialHistory}
+NPO / LAST ORAL INTAKE: ${c.chart.npoStatus}
+REVIEW OF SYSTEMS: ${c.chart.reviewOfSystems}
+
+RULES FOR HOW YOU RESPOND:
+- Speak in first person, as the patient, in plain lay language (not medical jargon back at them).
+- Answer ONLY what is asked. Do not volunteer your entire history unprompted. If asked a broad open-ended question like "tell me about your medical history," give a reasonably brief, natural summary, not an exhaustive recitation.
+- If asked about something not in your chart, say you don't have that problem / it's never come up, consistent with the chart.
+- Show a believable, mild human personality and appropriate emotion (e.g., some anxiety about surgery, mild annoyance if asked the same thing repeatedly, warmth if the student is reassuring) but do not overact.
+- Keep responses fairly short and conversational — 1 to 4 sentences typically, like a real patient talking, not a chart dump.
+- Never break character, never mention that you are an AI, never mention "the chart" or "the case."
+- If the student asks something ambiguous or unclear, respond the way a real patient would (asking for clarification, or giving a slightly imprecise answer) rather than being a perfect medical informant.`;
+}
+
+function gradingSystemPrompt(c, examDoneList){
+  return `You are an attending anesthesiologist grading a fourth-year medical student's pre-operative history and physical exam performance in a simulated patient encounter. Be a fair but rigorous evaluator — this is formative feedback for a learner, not a real clinical record.
+
+GROUND TRUTH CASE (the student did not see this):
+Patient: ${c.name}, ${c.age}${c.sex==='female'?'F':'M'}, procedure: ${c.procedure}
+PMH: ${c.chart.pmh}
+PSH: ${c.chart.psh}
+Anesthesia history: ${c.chart.anesthesiaHistory}
+Medications: ${c.chart.medications}
+Allergies: ${c.chart.allergies}
+Family history: ${c.chart.familyHistory}
+Social history: ${c.chart.socialHistory}
+NPO status: ${c.chart.npoStatus}
+Review of systems: ${c.chart.reviewOfSystems}
+Exam findings available: ${JSON.stringify(c.chart.exam)}
+Correct ASA classification: ${c.asaClass}
+The critical teaching point / red flag for this case: ${c.redFlag}
+
+KEY HISTORY ITEMS A STRONG STUDENT SHOULD HAVE ELICITED:
+${c.keyHistoryItems.map(x=>'- '+x).join('\n')}
+
+PHYSICAL EXAM ITEMS THE STUDENT ACTUALLY REVIEWED IN-APP: ${examDoneList.length ? examDoneList.join(', ') : 'none'}
+(Available exam items were: airway, heart, lungs, vitals)
+
+Respond with ONLY valid JSON, no markdown fences, no preamble, matching exactly this shape:
+{
+  "overallScore": <integer 0-100>,
+  "domains": {
+    "history": {"score": <0-40>, "max":40, "feedback":"<1-2 sentence feedback>"},
+    "physicalExam": {"score": <0-20>, "max":20, "feedback":"<1-2 sentence feedback>"},
+    "clinicalReasoning": {"score": <0-25>, "max":25, "feedback":"<1-2 sentence feedback on whether they identified the case's key red flag / risk factors and reasonable ASA class>"},
+    "communication": {"score": <0-15>, "max":15, "feedback":"<1-2 sentence feedback on rapport, clarity, quality of their opening introduction (name + stated role), and appropriate follow-up questions>"}
+  },
+  "missedCritical": ["<specific important item they failed to ask or check, be concrete>", "..."],
+  "strengths": ["<specific thing they did well, be concrete, reference something they actually asked>", "..."],
+  "teachingPoints": ${JSON.stringify(c.teachingPoints)}
+}
+Base missedCritical and strengths on the ACTUAL transcript provided in the next message, citing specifics. If they did not ask about something on the key items list, it belongs in missedCritical. Keep each array to at most 4 concise items.`;
+}
+
+/* ============================= RENDER ============================= */
+const app = document.getElementById('app');
+
+function render(){
+  if(state.screen==='select') return renderSelect();
+  if(state.screen==='learn') return renderLearn();
+  if(state.screen==='interview') return renderInterview();
+  if(state.screen==='grading') return renderGrading();
+  if(state.screen==='report') return renderReport();
+}
+
+function renderSelect(){
+  app.innerHTML = `
+    <div class="masthead">
+      <div>
+        <h1>Pre-Op Assessment Trainer</h1>
+        <div class="tag">Practice taking a pre-operative history &amp; physical before you're doing it for real</div>
+      </div>
+      <div class="brand-mark">ANESTHESIA<br>ELECTIVE · 4TH YEAR</div>
+    </div>
+    <div class="setup-card ${state.classPasscode ? 'ready' : ''}">
+      <h3>${state.classPasscode ? '✓ Connected' : 'Enter your class passcode'}</h3>
+      <div class="setup-hint">
+        ${state.classPasscode
+          ? "You can update it below at any time if your instructor changes it."
+          : "The patient and grading are powered by Claude. Enter the passcode your instructor gave you — it's saved on this device so you won't need to re-enter it next time. This isn't a personal account or API key; it's a shared class passcode, and everyone in the class uses the same one."}
+      </div>
+      <div class="setup-row">
+        <input type="password" id="classPasscodeInput" placeholder="Class passcode" value="${state.classPasscode}">
+        <button class="save-key-btn" id="saveKeyBtn">${state.classPasscode ? 'Update' : 'Save'}</button>
+      </div>
+    </div>
+    <div class="primer-callout">
+      <div>
+        <div class="eyebrow">Start here</div>
+        <h3 style="font-size:17px; margin-top:3px;">Pre-Op History &amp; Physical: What to Look For</h3>
+        <div class="muted" style="font-size:13.5px; margin-top:3px;">A short primer on why the history and exam matter, and what experienced anesthesiologists check — read this before your first interview.</div>
+      </div>
+      <button class="begin-btn" id="learnBtn">Read the primer</button>
+    </div>
+    <div class="intro">
+      <p>Then pick a patient below. You'll interview them by voice or by typing — ask about their history the way you would on the wards. Then walk through the physical exam panel, and submit for a graded report when you're done.</p>
+    </div>
+    <div class="chart-rack">
+      ${Object.values(CASES).map(c=>`
+        <div class="chart-card">
+          <div>
+            <div class="tab">${c.tab}</div>
+            <h3>${c.name}, ${c.age}${c.sex==='female'?'F':'M'}</h3>
+            <div class="meta">${c.summary}</div>
+            <div class="proc">→ ${c.procedure}</div>
+          </div>
+          <button class="begin-btn" data-case="${c.id}">Begin interview</button>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  document.getElementById('learnBtn').addEventListener('click', ()=>{ state.screen='learn'; render(); });
+  app.querySelectorAll('.begin-btn[data-case]').forEach(btn=>{
+    btn.addEventListener('click', ()=>startCase(btn.dataset.case));
+  });
+  const keyInput = document.getElementById('classPasscodeInput');
+  document.getElementById('saveKeyBtn').addEventListener('click', ()=>{
+    state.classPasscode = keyInput.value.trim();
+    saveKey('preop_class_passcode', state.classPasscode);
+    render();
+  });
+  keyInput.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){
+      state.classPasscode = keyInput.value.trim();
+      saveKey('preop_class_passcode', state.classPasscode);
+      render();
+    }
+  });
+}
+
+function startCase(id){
+  state.caseId=id;
+  state.introduced=false;
+  state.messages=[];
+  state.examOpen={};
+  state.examDone=new Set();
+  state.error=null;
+  state.micStatus=null;
+  state.startedAt=Date.now();
+  state.screen='interview';
+  render();
+}
+
+function renderLearn(){
+  app.innerHTML = `
+    <div class="masthead">
+      <div>
+        <h1>The Pre-Op History &amp; Physical</h1>
+        <div class="brief-sub">Why each half matters, and what to specifically look for</div>
+      </div>
+      <div class="brand-mark">ANESTHESIA<br>ELECTIVE · 4TH YEAR</div>
+    </div>
+
+    <div class="brief-intro">
+      A pre-operative assessment has two halves, and skipping either one leaves a gap the other can't cover. The history is usually where most of your actual risk assessment happens — it's often the only way you'll catch a family history of a fatal anesthesia "reaction," a medication interaction, or an aspiration risk from a missed fasting violation. The physical exam then confirms what the history told you, and sometimes catches what it didn't: an airway that looks fine on paper but proves difficult to visualize, a murmur nobody mentioned. Here's what to focus on in each.
+    </div>
+
+    <div class="eyebrow" style="margin-bottom:6px;">Part 1</div>
+    <h3 style="font-size:19px; margin-bottom:10px;">The History</h3>
+    <div class="brief-grid">
+      <div class="brief-card">
+        <div class="bicon">📋</div>
+        <h4>Medical &amp; Surgical History</h4>
+        <div class="why">Why: establishes the comorbidities and prior procedures that shape today's anesthetic plan.</div>
+        <ul>
+          <li>Chronic conditions (cardiac, pulmonary, renal, diabetes, etc.) and how well-controlled they are</li>
+          <li>Prior surgeries — what, when, and how the patient tolerated them</li>
+          <li>Any complications from a previous procedure or hospitalization</li>
+        </ul>
+      </div>
+      <div class="brief-card">
+        <div class="bicon">💉</div>
+        <h4>Anesthesia History</h4>
+        <div class="why">Why: a personal or family history is often the single best predictor of problems today — and often never makes it into the chart otherwise.</div>
+        <ul>
+          <li>Has the patient had anesthesia before, and how did it go? (nausea, awareness, difficult intubation, prolonged recovery)</li>
+          <li>Any personal or family history of a "bad reaction" — always ask what kind and what happened, don't accept a vague answer</li>
+          <li>Family history suggestive of malignant hyperthermia: fever, muscle rigidity, or death during a relative's surgery</li>
+        </ul>
+      </div>
+      <div class="brief-card">
+        <div class="bicon">💊</div>
+        <h4>Medications &amp; Allergies</h4>
+        <div class="why">Why: determines what to hold, what to continue, and what could interact with your anesthetic drugs.</div>
+        <ul>
+          <li>Full medication list, including OTC drugs and supplements</li>
+          <li>Anticoagulants/antiplatelets — which ones, and when the last dose was (bleeding vs. thrombosis risk)</li>
+          <li>Drug allergies, and exactly what the reaction was — a rash is very different from anaphylaxis</li>
+        </ul>
+      </div>
+      <div class="brief-card">
+        <div class="bicon">🚬</div>
+        <h4>Social History</h4>
+        <div class="why">Why: smoking, alcohol, and drug use directly affect airway reactivity, withdrawal risk, and drug dosing.</div>
+        <ul>
+          <li>Smoking status and pack-year history (reactive airway, wound healing)</li>
+          <li>Alcohol use — quantity and frequency (withdrawal risk, anesthetic requirement)</li>
+          <li>Recreational drug use, which can affect airway management and drug interactions</li>
+        </ul>
+      </div>
+      <div class="brief-card">
+        <div class="bicon">⏱️</div>
+        <h4>NPO Status</h4>
+        <div class="why">Why: confirms aspiration risk — one of the most preventable causes of perioperative harm.</div>
+        <ul>
+          <li>Time and content of last oral intake (solids vs. clear liquids have different fasting windows)</li>
+          <li>Any reason standard fasting guidelines might not apply (trauma, an emergent case, reflux)</li>
+        </ul>
+      </div>
+      <div class="brief-card">
+        <div class="bicon">🩺</div>
+        <h4>Review of Systems</h4>
+        <div class="why">Why: a focused ROS surfaces symptoms the patient didn't think to mention as "medical history."</div>
+        <ul>
+          <li>Cardiac: chest pain, exertional symptoms, palpitations, orthopnea</li>
+          <li>Pulmonary: shortness of breath, wheeze, snoring or witnessed apneas</li>
+          <li>Any recent fevers, infections, or new/unexplained symptoms</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="eyebrow" style="margin-bottom:6px;">Part 2</div>
+    <h3 style="font-size:19px; margin-bottom:10px;">The Physical Exam</h3>
+    <div class="brief-grid">
+      <div class="brief-card">
+        <div class="bicon">🫁</div>
+        <h4>Airway Exam</h4>
+        <div class="why">Why: predicts difficult mask ventilation or intubation before it becomes an emergency in the OR.</div>
+        <ul>
+          <li><strong>Mallampati class</strong> (I–IV) — how much of the oropharynx you can see with mouth open, tongue out</li>
+          <li><strong>Mouth opening</strong> — reassuring if &gt;3cm / about two fingerbreadths</li>
+          <li><strong>Thyromental distance</strong> — &gt;6.5cm is normal; shorter suggests a harder laryngoscopy</li>
+          <li><strong>Neck mobility</strong> — full flexion/extension vs. limited (e.g. arthritis)</li>
+          <li><strong>Dentition</strong> — loose teeth, dentures, prominent incisors (aspiration/damage risk)</li>
+        </ul>
+      </div>
+      <div class="brief-card">
+        <div class="bicon">❤️</div>
+        <h4>Cardiac Exam</h4>
+        <div class="why">Why: undiagnosed or uncontrolled cardiac disease is one of the biggest drivers of perioperative risk.</div>
+        <ul>
+          <li><strong>Rate &amp; rhythm</strong> — an irregular rhythm may signal an undiagnosed arrhythmia</li>
+          <li><strong>Murmurs</strong> — possible valvular disease that could change monitoring or anesthetic choice</li>
+          <li><strong>JVD / peripheral edema</strong> — signs of volume overload or heart failure</li>
+        </ul>
+      </div>
+      <div class="brief-card">
+        <div class="bicon">🌬️</div>
+        <h4>Pulmonary Exam</h4>
+        <div class="why">Why: baseline lung findings help you anticipate ventilation difficulty and post-op respiratory complications.</div>
+        <ul>
+          <li><strong>Breath sounds</strong> bilaterally — wheezes suggest reactive airway/bronchospasm risk, crackles suggest fluid or infection</li>
+          <li><strong>Respiratory rate &amp; effort</strong> — labored breathing changes your plan</li>
+          <li><strong>OSA signs</strong> — obesity, large neck circumference, reported snoring/witnessed apneas</li>
+        </ul>
+      </div>
+      <div class="brief-card">
+        <div class="bicon">📟</div>
+        <h4>Vitals &amp; General</h4>
+        <div class="why">Why: baseline vitals anchor your intraoperative monitoring and can surface issues the history missed.</div>
+        <ul>
+          <li><strong>BP, HR, RR, SpO2, Temp</strong> — your intraoperative comparison point</li>
+          <li><strong>BMI</strong> — affects airway, drug dosing, and positioning</li>
+          <li><strong>General appearance</strong> — distress, pallor, anxiety, ability to lie flat</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="asa-box">
+      <h4>Quick reference: ASA Physical Status Classification</h4>
+      <div class="muted" style="font-size:12.5px; margin-bottom:10px;">This is where the history and exam come together — the ASA class reflects both.</div>
+      <table class="asa-table">
+        <tr><td class="cls">ASA I</td><td>A normal, healthy patient</td></tr>
+        <tr><td class="cls">ASA II</td><td>Mild systemic disease, no functional limitation</td></tr>
+        <tr><td class="cls">ASA III</td><td>Severe systemic disease with functional limitation</td></tr>
+        <tr><td class="cls">ASA IV</td><td>Severe systemic disease that is a constant threat to life</td></tr>
+        <tr><td class="cls">ASA V</td><td>Moribund, not expected to survive without the operation</td></tr>
+        <tr><td class="cls">ASA VI</td><td>Declared brain-dead, organ donor</td></tr>
+      </table>
+    </div>
+
+    <div class="brief-cta-row">
+      <button class="back-link" id="backToSelectFromLearn">← Back to patient list</button>
+    </div>
+  `;
+  document.getElementById('backToSelectFromLearn').addEventListener('click', ()=>{ state.screen='select'; render(); });
+}
+
+function examLabel(key){
+  return {airway:'Airway exam', heart:'Cardiac auscultation', lungs:'Pulmonary auscultation', vitals:'Review vital signs'}[key];
+}
+
+function renderInterview(){
+  const c = CASES[state.caseId];
+  app.innerHTML = `
+    <div class="monitor">
+      <div class="who">
+        <h2>${c.name} · ${c.age}${c.sex==='female'?'F':'M'}</h2>
+        <div class="sub">${c.procedure.toUpperCase()}</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span class="step-badge ${state.introduced?'done':''}">${state.introduced ? '✓ Introduced' : 'Step 1 · Introduce yourself'}</span>
+        <button class="exit-btn" id="endBtn" ${state.introduced ? '' : 'disabled title="Introduce yourself to the patient first"'}>End interview &amp; submit for grading</button>
+      </div>
+    </div>
+    ${state.error ? `<div class="error-banner">${state.error}</div>` : ''}
+    ${!state.introduced ? `<div class="intro-banner">Before asking any medical questions, introduce yourself to ${c.name.split(' ')[0]} and state your role in their care — e.g. "Hi, I'm ___, a medical student working with your anesthesia team today."</div>` : ''}
+    <div class="interview-grid">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>History — Interview</h3>
+          <div style="display:flex; gap:6px;">
+            <button class="icon-btn" id="voiceSettingsBtn" title="Voice settings">⚙️</button>
+            <button class="icon-btn ${state.voiceOn?'active':''}" id="voiceToggle" title="Toggle patient voice">${state.voiceOn?'🔊':'🔇'}</button>
+          </div>
+        </div>
+        ${state.voiceSettingsOpen ? `
+        <div class="voice-settings">
+          <div class="vs-row">
+            <label>Anthropic API key ${state.anthropicKey ? '<span class="vs-tag">SET</span>' : '(required — the patient won\'t respond without it)'}</label>
+            <input type="password" id="anthropicKeyInputInline" placeholder="sk-ant-..." value="${state.anthropicKey}">
+          </div>
+          <div class="vs-row">
+            <label>Realistic AI voice ${state.elevenLabsKey ? '<span class="vs-tag">ACTIVE</span>' : '(optional)'}</label>
+            <input type="password" id="elevenKeyInput" placeholder="Paste an ElevenLabs API key…" value="${state.elevenLabsKey}">
+          </div>
+          <div class="vs-hint">Adds natural AI-generated speech instead of your browser's built-in voice. Get a free key at elevenlabs.io. Saved in this browser's local storage for next time; used only for direct requests from your browser to ElevenLabs, never sent anywhere else. Leave blank to just use your system voice below.</div>
+          <div class="vs-row">
+            <label>System voice (used if no key above)</label>
+            <select id="browserVoiceSelect">${voiceOptionsHtml()}</select>
+          </div>
+          <div class="vs-actions">
+            <button id="checkMicBtn">🎙️ Check microphone</button>
+            <button id="testVoiceBtn">▶ Test voice</button>
+          </div>
+          ${state.micStatus ? `<div class="vs-hint" style="color:${state.micStatus.ok?'var(--green)':'var(--rose)'};">${state.micStatus.msg}</div>` : ''}
+        </div>` : ''}
+        <div class="transcript" id="transcript">
+          ${state.messages.length===0 ? `<div class="bubble patient"><span class="role-tag">Patient</span>Oh, hi — sorry, are you one of the doctors? I don't think we've met.</div>` : ''}
+          ${state.messages.map(m=>`
+            <div class="bubble ${m.role==='user'?'student':'patient'}">
+              <span class="role-tag">${m.role==='user'?'You':c.name.split(' ')[0]}</span>${escapeHtml(m.text)}
+            </div>
+          `).join('')}
+          ${state.sending ? `<div class="bubble patient thinking"><span class="role-tag">${c.name.split(' ')[0]}</span>…thinking…</div>` : ''}
+        </div>
+        ${isIOS()
+          ? '<div class="voice-note">📱 On iPhone/iPad, tap into the box below and use your keyboard\'s own dictation mic (next to the spacebar) to speak your question instead — the app\'s mic button doesn\'t work in Safari/iOS.</div>'
+          : (recognition ? '<div class="voice-note">🎙️ Mic not responding? Open ⚙️ above and click "Check microphone" for a specific diagnosis.</div>' : '<div class="voice-note">Voice input isn\'t supported in this browser — typing works great too.</div>')}
+        <div class="input-row">
+          ${isIOS() ? '' : `<button class="icon-btn ${state.listening?'active':''}" id="micBtn" title="Speak your question" ${recognition? '':'disabled'}>${state.listening?'⏺':'🎙️'}</button>`}
+          <input type="text" id="textInput" placeholder="${state.introduced ? 'Ask your patient something…' : 'Introduce yourself…'}" autocomplete="off">
+          <button class="send-btn" id="sendBtn" ${state.sending?'disabled':''}>Send</button>
+        </div>
+      </div>
+      <div class="panel ${state.introduced ? '' : 'locked-panel'}">
+        <div class="panel-head"><h3>Physical Exam</h3></div>
+        ${state.introduced ? '' : '<div class="lock-note">🔒 Unlocks once you\'ve introduced yourself</div>'}
+        <div class="exam-list">
+          ${['airway','heart','lungs','vitals'].map(key=>`
+            <div class="exam-item ${state.examOpen[key]?'open':''} ${state.examDone.has(key)?'done':''}" data-key="${key}">
+              <button class="exam-toggle">
+                <span>${examLabel(key)}</span>
+                <span class="checkmark">${state.examDone.has(key)?'✓ reviewed':'perform →'}</span>
+              </button>
+              <div class="finding">${c.chart.exam[key]}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+
+  const transcriptEl = document.getElementById('transcript');
+  transcriptEl.scrollTop = transcriptEl.scrollHeight;
+
+  document.getElementById('endBtn').addEventListener('click', endInterview);
+  document.getElementById('voiceToggle').addEventListener('click', ()=>{ state.voiceOn=!state.voiceOn; if(!state.voiceOn) stopSpeaking(); render(); });
+  document.getElementById('voiceSettingsBtn').addEventListener('click', ()=>{ state.voiceSettingsOpen=!state.voiceSettingsOpen; render(); });
+  if(state.voiceSettingsOpen){
+    const anthropicInput = document.getElementById('anthropicKeyInputInline');
+    anthropicInput.addEventListener('input', e=>{
+      state.anthropicKey = e.target.value.trim();
+      saveKey('preop_anthropic_key', state.anthropicKey);
+    });
+    const keyInput = document.getElementById('elevenKeyInput');
+    keyInput.addEventListener('input', e=>{
+      state.elevenLabsKey = e.target.value.trim();
+      saveKey('preop_elevenlabs_key', state.elevenLabsKey);
+    });
+    const voiceSelect = document.getElementById('browserVoiceSelect');
+    voiceSelect.value = state.browserVoiceURI;
+    voiceSelect.addEventListener('change', e=>{ state.browserVoiceURI = e.target.value; });
+    document.getElementById('testVoiceBtn').addEventListener('click', ()=>{
+      const sex = state.caseId ? CASES[state.caseId].sex : 'female';
+      speak("Hi there — this is what I'll sound like during your interview.", sex);
+    });
+    document.getElementById('checkMicBtn').addEventListener('click', async ()=>{
+      state.micStatus = await checkMicAccess();
+      render();
+    });
+  }
+  document.getElementById('sendBtn').addEventListener('click', submitTextInput);
+  const inputEl = document.getElementById('textInput');
+  inputEl.addEventListener('keydown', e=>{ if(e.key==='Enter') submitTextInput(); });
+  inputEl.focus();
+
+  const micBtn = document.getElementById('micBtn');
+  if(micBtn){ micBtn.addEventListener('click', toggleMic); }
+
+  app.querySelectorAll('.exam-item').forEach(el=>{
+    el.querySelector('.exam-toggle').addEventListener('click', ()=>{
+      if(!state.introduced) return;
+      const key = el.dataset.key;
+      state.examOpen[key] = !state.examOpen[key];
+      state.examDone.add(key);
+      render();
+    });
+  });
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div'); d.innerText = s; return d.innerHTML;
+}
+
+function submitTextInput(){
+  const inputEl = document.getElementById('textInput');
+  const text = inputEl.value.trim();
+  if(!text || state.sending) return;
+  inputEl.value='';
+  sendStudentMessage(text);
+}
+
+function micErrorMessage(err){
+  const name = err && err.name;
+  if(name==='NotAllowedError' || name==='PermissionDeniedError') return "Microphone access was denied. Click the camera/lock icon in your address bar, allow the microphone for this page, then try again.";
+  if(name==='NotFoundError' || name==='DevicesNotFoundError') return "No microphone was found. Check that one is connected and enabled in your system's sound settings.";
+  if(name==='NotReadableError') return "Your microphone is already in use by another app, or there's a hardware issue — close other apps using it and try again.";
+  if(name==='SecurityError') return "Blocked for security reasons — this page needs to be served over https or localhost, not opened as a local file.";
+  return "Couldn't access the microphone (" + (name || (err&&err.message) || 'unknown error') + ").";
+}
+
+async function checkMicAccess(){
+  if(!recognition){
+    return {ok:false, msg:"This browser doesn't support voice recognition at all — try Chrome or Edge."};
+  }
+  if(!window.isSecureContext){
+    return {ok:false, msg:"Blocked: this page isn't running on https or localhost. Opening the file directly (a file:// address) disables microphone access in Chrome. Serve it locally instead — open a terminal in the file's folder and run: python3 -m http.server 8000 — then visit http://localhost:8000 in Chrome and open the file from there. Or host it anywhere with https."};
+  }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    return {ok:false, msg:"This browser isn't exposing microphone access on this page."};
+  }
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    stream.getTracks().forEach(t=>t.stop());
+    return {ok:true, msg:"Microphone access works — you're good to go."};
+  }catch(err){
+    return {ok:false, msg:micErrorMessage(err)};
+  }
+}
+
+async function toggleMic(){
+  if(!recognition) return;
+  if(state.listening){
+    recognition.stop();
+    return;
+  }
+  state.error=null;
+  const check = await checkMicAccess();
+  if(!check.ok){
+    state.error = check.msg;
+    render();
+    return;
+  }
+  state.listening=true;
+  render();
+  try{
+    recognition.start();
+  }catch(err){
+    state.listening=false;
+    state.error="Couldn't start the microphone (" + err.message + ").";
+    render();
+    return;
+  }
+  recognition.onresult = (e)=>{
+    const transcript = e.results[0][0].transcript;
+    state.listening=false;
+    render();
+    sendStudentMessage(transcript);
+  };
+  recognition.onerror = (e)=>{
+    state.listening=false;
+    const messages = {
+      'not-allowed':"Microphone access was blocked. Check your browser/site microphone settings, or use the ⚙️ Check microphone button above for a full diagnosis.",
+      'audio-capture':"No microphone was found on this device.",
+      'no-speech':"Didn't catch any speech — try again, a bit closer to the mic.",
+      'network':"A network error interrupted voice recognition. Try again, or use the text box.",
+      'aborted':null
+    };
+    const msg = messages.hasOwnProperty(e.error) ? messages[e.error] : ("Voice input error: " + e.error + ". Typing works fine too.");
+    if(msg) state.error = msg;
+    render();
+  };
+  recognition.onend = ()=>{ if(state.listening){ state.listening=false; render(); } };
+}
+
+async function sendStudentMessage(text){
+  if(!state.introduced){
+    await handleIntroAttempt(text);
+  }else{
+    await handleHistoryMessage(text);
+  }
+}
+
+function introCheckSystemPrompt(c){
+  return `You are role-playing as a patient named ${c.name}, a ${c.age}-year-old ${c.sex}, about to have ${c.procedure}. Someone has just walked up and spoken their opening line to you. This is the very first line of a training simulation for a medical student's pre-operative interview.
+
+Determine whether their opening line includes BOTH:
+1. Some form of their own name or identification (e.g. "Hi, I'm Jordan"). A bare "hi doctor" does NOT count as a name.
+2. A clear statement of their role in the patient's care (e.g. "medical student," "student doctor," "I'm working with your anesthesia team today," "I'll be helping take care of you before surgery"). A vague "I'm here to ask some questions" does NOT count as a role.
+
+Respond with ONLY valid JSON, no markdown fences, no extra text, in exactly this shape:
+{"hasName": <true|false>, "hasRole": <true|false>, "patientReply": "<a short, natural, in-character reply, 1-2 sentences>"}
+
+If both hasName and hasRole are true: patientReply should be a warm, brief greeting back that shows the patient is ready to talk (e.g. "Oh good, nice to meet you — I've been a little nervous waiting here.").
+If either is false: patientReply should be a polite, natural, in-character line where the patient gently asks for whichever piece is missing — the way a real pre-op patient would, not a checklist. Never mention "hasName," "hasRole," JSON, or that this is a simulation — just react as the patient naturally would.`;
+}
+
+async function handleIntroAttempt(text){
+  const c = CASES[state.caseId];
+  state.messages.push({role:'user', text});
+  state.sending=true;
+  state.error=null;
+  render();
+  try{
+    const raw = await callClaude(introCheckSystemPrompt(c), [{role:'user', content:text}], 300);
+    const cleaned = raw.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(cleaned);
+    state.messages.push({role:'assistant', text:parsed.patientReply});
+    if(parsed.hasName && parsed.hasRole){ state.introduced = true; }
+    state.sending=false;
+    render();
+    if(state.voiceOn){ speak(parsed.patientReply, c.sex); }
+  }catch(err){
+    state.sending=false;
+    state.error = introErrorMessage(err);
+    render();
+  }
+}
+
+function introErrorMessage(err){
+  if(err && err.code==='NO_KEY') return "The AI patient can't respond yet — you need to add an Anthropic API key first. Open ⚙️ above and paste one in.";
+  if(err && err.code==='UNAUTHORIZED') return err.message;
+  if(err && err.code==='NETWORK') return err.message;
+  return "The AI patient didn't respond (" + (err && err.message ? err.message : 'unknown error') + "). Check your API key and connection, then try again.";
+}
+
+async function handleHistoryMessage(text){
+  const c = CASES[state.caseId];
+  state.messages.push({role:'user', text});
+  state.sending=true;
+  state.error=null;
+  render();
+  try{
+    const apiMessages = state.messages.map(m=>({role:m.role, content:m.text}));
+    const reply = await callClaude(patientSystemPrompt(c), apiMessages, 400);
+    state.messages.push({role:'assistant', text:reply});
+    state.sending=false;
+    render();
+    if(state.voiceOn){ speak(reply, c.sex); }
+  }catch(err){
+    state.sending=false;
+    state.error = introErrorMessage(err);
+    render();
+  }
+}
+
+function voiceOptionsHtml(){
+  const voices = speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));
+  const list = voices.length ? voices : speechSynthesis.getVoices();
+  let opts = `<option value="">Auto (best available)</option>`;
+  opts += list.map(v=>`<option value="${v.voiceURI}" ${state.browserVoiceURI===v.voiceURI?'selected':''}>${v.name} (${v.lang})</option>`).join('');
+  return opts;
+}
+if(typeof speechSynthesis !== 'undefined'){
+  speechSynthesis.onvoiceschanged = ()=>{ if(state.voiceSettingsOpen) render(); };
+}
+
+let currentAudio=null;
+
+function stopSpeaking(){
+  try{ speechSynthesis.cancel(); }catch(e){}
+  if(currentAudio){ currentAudio.pause(); currentAudio=null; }
+}
+
+async function speak(text, sex){
+  if(state.elevenLabsKey){
+    try{
+      await speakElevenLabs(text, sex);
+      return;
+    }catch(err){
+      state.error = "AI voice failed (check your ElevenLabs key or credits, and that you're not viewing this inside Claude's in-chat preview) — used your system voice instead.";
+      render();
+    }
+  }
+  speakBrowser(text, sex);
+}
+
+function speakBrowser(text, sex){
+  try{
+    speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    const voices = speechSynthesis.getVoices();
+    let chosen=null;
+    if(state.browserVoiceURI){ chosen = voices.find(v=>v.voiceURI===state.browserVoiceURI); }
+    if(!chosen){
+      chosen = voices.find(v=> sex==='female'
+        ? /female|zira|samantha|victoria|aria|jenny|natural/i.test(v.name)
+        : /male|david|daniel|alex|guy|davis|natural/i.test(v.name));
+    }
+    if(chosen) utter.voice = chosen;
+    utter.rate = 1.0;
+    speechSynthesis.speak(utter);
+  }catch(e){/* speech synthesis not available, ignore */}
+}
+
+async function speakElevenLabs(text, sex){
+  const voiceId = sex==='female' ? '21m00Tcm4TlvDq8ikWAM' : 'pNInz6obpgDQGcFmaJgB'; // Rachel / Adam (ElevenLabs premade voices)
+  const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+    method:'POST',
+    headers:{
+      'xi-api-key': state.elevenLabsKey,
+      'Content-Type':'application/json',
+      'Accept':'audio/mpeg'
+    },
+    body: JSON.stringify({
+      text: text,
+      model_id: 'eleven_turbo_v2',
+      voice_settings:{ stability:0.5, similarity_boost:0.75 }
+    })
+  });
+  if(!resp.ok) throw new Error('ElevenLabs request failed: '+resp.status);
+  const blob = await resp.blob();
+  const url = URL.createObjectURL(blob);
+  if(currentAudio){ currentAudio.pause(); }
+  currentAudio = new Audio(url);
+  currentAudio.play();
+}
+
+/* ============================= GRADING ============================= */
+function renderGrading(){
+  app.innerHTML = `<div class="loading-screen"><div class="spinner"></div>Grading your performance…</div>`;
+}
+
+async function endInterview(){
+  stopSpeaking();
+  if(!state.introduced){
+    state.error = "Introduce yourself and state your role before ending the interview.";
+    render();
+    return;
+  }
+  if(state.messages.length===0){
+    state.error = "Ask at least one question before submitting.";
+    render();
+    return;
+  }
+  state.screen='grading';
+  render();
+  const c = CASES[state.caseId];
+  const examDoneList = Array.from(state.examDone).map(examLabel);
+  const transcriptText = state.messages.map(m=> (m.role==='user'?'Student: ':'Patient: ') + m.text).join('\n');
+  try{
+    const raw = await callClaude(
+      gradingSystemPrompt(c, examDoneList),
+      [{role:'user', content:'Here is the full transcript of the encounter:\n\n'+transcriptText}],
+      1000
+    );
+    const cleaned = raw.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(cleaned);
+    state.report = parsed;
+    state.screen='report';
+    render();
+  }catch(err){
+    state.screen='interview';
+    state.error = "Grading failed: " + introErrorMessage(err);
+    render();
+  }
+}
+
+/* ============================= REPORT ============================= */
+function renderReport(){
+  const c = CASES[state.caseId];
+  const r = state.report;
+  const verdict = r.overallScore>=85 ? "Strong, thorough encounter." : r.overallScore>=65 ? "Solid start — a few gaps to tighten up." : "Good practice rep — several important items were missed.";
+  app.innerHTML = `
+    <div class="masthead">
+      <div><h1>Encounter Report</h1><div class="tag">${c.name} · ${c.procedure}</div></div>
+      <div class="brand-mark">PRE-OP ASSESSMENT<br>TRAINER</div>
+    </div>
+    <div class="score-hero">
+      <div>
+        <div class="label">Overall Score</div>
+        <div class="num">${r.overallScore}<span>/100</span></div>
+      </div>
+      <div class="verdict">${verdict}</div>
+    </div>
+    <div class="domains">
+      ${Object.entries(r.domains).map(([key,d])=>`
+        <div class="domain-card">
+          <div class="dname">${domainName(key)}</div>
+          <div class="dscore">${d.score}<span style="font-size:14px;color:var(--ink-soft);">/${d.max}</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,(d.score/d.max)*100)}%"></div></div>
+          <div style="margin-top:8px;font-size:13px;color:var(--ink-soft);line-height:1.5;">${d.feedback}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="report-section critical">
+      <h4>Missed or incomplete</h4>
+      <ul>${(r.missedCritical||[]).map(x=>`<li>${x}</li>`).join('') || '<li>Nothing significant — nice work.</li>'}</ul>
+    </div>
+    <div class="report-section strength">
+      <h4>What you did well</h4>
+      <ul>${(r.strengths||[]).map(x=>`<li>${x}</li>`).join('')}</ul>
+    </div>
+    <div class="report-section teach">
+      <h4>Teaching points for this case</h4>
+      <ul>${(r.teachingPoints||[]).map(x=>`<li>${x}</li>`).join('')}</ul>
+    </div>
+    <button class="again-btn" id="againBtn">Try another patient</button>
+  `;
+  document.getElementById('againBtn').addEventListener('click', ()=>{
+    state.screen='select'; state.caseId=null; state.report=null; render();
+  });
+}
+
+function domainName(key){
+  return {history:'History Taking', physicalExam:'Physical Exam', clinicalReasoning:'Clinical Reasoning', communication:'Communication'}[key] || key;
+}
+
+render();
+</script>
+</body>
+</html>
