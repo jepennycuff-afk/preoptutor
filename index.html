@@ -47,7 +47,11 @@ h1,h2,h3{font-family:'Source Serif 4',serif;margin:0;}
 }
 .muted{color:var(--ink-soft);}
 button{font-family:'Inter',sans-serif;cursor:pointer;}
-button:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:2px;}
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--teal); outline-offset:2px;}
+/* iOS Safari zooms the page when a focused field's text is under 16px */
+input, select, textarea{font-size:16px;}
+.sr-only{position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;}
+h1:focus, h2:focus{outline:none;}
 
 /* ---------- HEADER ---------- */
 .masthead{
@@ -82,7 +86,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline
 .setup-card .setup-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
 .setup-card input[type=password]{
   flex:1; min-width:220px; border:1px solid var(--line); border-radius:8px; padding:10px 12px;
-  font-size:13.5px; font-family:'Inter',sans-serif;
+  font-size:16px; font-family:'Inter',sans-serif;
 }
 .setup-card .save-key-btn{
   background:var(--teal); color:#fff; border:none; border-radius:8px; padding:10px 16px; font-size:13.5px; font-weight:600; white-space:nowrap;
@@ -99,7 +103,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline
   display:flex; justify-content:space-between; align-items:center; gap:16px;
   transition:transform .15s ease, box-shadow .15s ease;
 }
-.chart-card:hover{transform:translateY(-2px); box-shadow:0 10px 26px rgba(28,43,51,0.1);}
+@media (hover:hover){.chart-card:hover{transform:translateY(-2px); box-shadow:0 10px 26px rgba(28,43,51,0.1);}}
 .chart-card .tab{
   font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.1em;
   color:var(--teal); text-transform:uppercase; margin-bottom:6px; font-weight:700;
@@ -128,8 +132,9 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline
 .monitor .who .sub{font-size:12.5px; color:#9FC4BE; font-family:'JetBrains Mono',monospace; margin-top:3px;}
 .monitor .exit-btn{
   background:var(--amber); border:none; color:#241505; font-weight:700;
-  padding:9px 14px; border-radius:8px; font-size:13px;
+  padding:11px 14px; border-radius:8px; font-size:13px; min-height:44px;
 }
+.monitor .leave-btn{background:none; border:1px solid #4F7570; color:#EAF3F1; border-radius:8px; padding:10px 12px; font-size:12.5px; font-weight:600; min-height:44px;}
 
 .interview-grid{display:grid; grid-template-columns:1.5fr 1fr; gap:16px;}
 @media (max-width:760px){.interview-grid{grid-template-columns:1fr;}}
@@ -145,34 +150,37 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline
 .panel-head h3{font-size:14px; font-family:'JetBrains Mono',monospace; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft);}
 
 .transcript{
-  height:380px; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px;
+  height:380px; height:clamp(240px, 52vh, 480px); height:clamp(240px, 52dvh, 480px);
+  overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px;
 }
 .bubble{max-width:82%; padding:10px 13px; border-radius:12px; font-size:14.5px; line-height:1.5;}
 .bubble.student{align-self:flex-end; background:var(--teal-pale); color:var(--teal-deep); border-bottom-right-radius:3px;}
 .bubble.patient{align-self:flex-start; background:var(--surface-2); color:var(--ink); border-bottom-left-radius:3px;}
-.bubble .role-tag{display:block; font-family:'JetBrains Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:.08em; opacity:.6; margin-bottom:3px;}
+.bubble .role-tag{display:block; font-family:'JetBrains Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:.08em; opacity:.8; margin-bottom:3px;}
 .bubble.thinking{font-style:italic; color:var(--ink-soft);}
 
 .input-row{display:flex; gap:8px; padding:12px 14px; border-top:1px solid var(--line); background:var(--surface-2);}
 .input-row input[type=text]{
-  flex:1; border:1px solid var(--line); border-radius:8px; padding:10px 12px; font-size:14.5px; font-family:'Inter',sans-serif;
+  flex:1; min-width:0; border:1px solid var(--line); border-radius:8px; padding:10px 12px; font-size:16px; font-family:'Inter',sans-serif;
 }
 .icon-btn{
-  border:1px solid var(--line); background:#fff; border-radius:8px; width:42px; height:42px;
+  border:1px solid var(--line); background:#fff; border-radius:8px; width:44px; height:44px;
   display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:17px;
 }
 .icon-btn.active{background:var(--rose); border-color:var(--rose); color:#fff;}
 .send-btn{
-  background:var(--teal); color:#fff; border:none; border-radius:8px; padding:0 16px; font-weight:600; font-size:14px;
+  background:var(--teal); color:#fff; border:none; border-radius:8px; padding:0 16px; font-weight:600; font-size:14px; min-height:44px;
 }
 .send-btn:disabled{opacity:.5; cursor:default;}
 
-.exam-list{padding:10px; display:flex; flex-direction:column; gap:8px; max-height:452px; overflow-y:auto;}
+.exam-list{padding:10px; display:flex; flex-direction:column; gap:8px; max-height:560px; overflow-y:auto;}
+@media (max-width:760px){.exam-list{max-height:none; overflow:visible;}}
+.exam-group-title{font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; margin:6px 2px 0;}
 .exam-item{
-  border:1px solid var(--line); border-radius:8px; background:#fff; overflow:hidden;
+  border:1px solid var(--line); border-radius:8px; background:#fff; overflow:hidden; flex-shrink:0;
 }
 .exam-item button.exam-toggle{
-  width:100%; text-align:left; background:none; border:none; padding:11px 13px;
+  width:100%; text-align:left; background:none; border:none; padding:12px 13px; min-height:44px;
   display:flex; justify-content:space-between; align-items:center; font-size:13.5px; font-weight:600; color:var(--ink);
 }
 .exam-item.done button.exam-toggle{color:var(--green);}
@@ -209,12 +217,12 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline
 .vs-row{display:flex; flex-direction:column; gap:5px;}
 .vs-row label{font-size:12px; font-weight:600; color:var(--ink-soft);}
 .vs-row input[type=password], .vs-row select{
-  border:1px solid var(--line); border-radius:7px; padding:8px 10px; font-size:13.5px; font-family:'Inter',sans-serif; background:#fff;
+  border:1px solid var(--line); border-radius:7px; padding:8px 10px; font-size:16px; font-family:'Inter',sans-serif; background:#fff;
 }
 .vs-hint{font-size:12px; color:var(--ink-soft); line-height:1.5;}
 .vs-actions{display:flex; gap:8px;}
 .vs-actions button{
-  border:1px solid var(--line); background:#fff; border-radius:7px; padding:7px 12px; font-size:12.5px; font-weight:600; color:var(--ink);
+  border:1px solid var(--line); background:#fff; border-radius:7px; padding:10px 12px; font-size:12.5px; font-weight:600; color:var(--ink); min-height:44px;
 }
 .vs-actions button.primary{background:var(--teal); color:#fff; border-color:var(--teal);}
 .vs-tag{display:inline-block; font-family:'JetBrains Mono',monospace; font-size:10px; padding:2px 7px; border-radius:10px; background:var(--green-pale); color:var(--green); font-weight:700; margin-left:6px;}
@@ -237,10 +245,10 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline
 .bar-fill{height:100%; background:var(--teal); border-radius:4px;}
 
 .report-section{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; margin-bottom:14px;}
-.report-section h4{font-size:13px; font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:.07em; margin-bottom:10px;}
-.report-section.critical h4{color:var(--rose);}
-.report-section.strength h4{color:var(--green);}
-.report-section.teach h4{color:var(--teal);}
+.report-section h4, .report-section .h4{margin-top:0; font-size:13px; font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:.07em; margin-bottom:10px;}
+.report-section.critical .h4, .report-section.critical h4{color:var(--rose);}
+.report-section.strength .h4, .report-section.strength h4{color:var(--green);}
+.report-section.teach .h4, .report-section.teach h4{color:var(--teal);}
 .report-section ul{margin:0; padding-left:18px; line-height:1.7; font-size:14.5px;}
 .report-section.critical{background:var(--rose-pale); border-color:#E3C3BF;}
 .report-section.strength{background:var(--green-pale); border-color:#C9DCC5;}
@@ -270,26 +278,100 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline
 .brief-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin-bottom:22px;}
 .brief-card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow);}
 .brief-card .bicon{font-size:20px; margin-bottom:6px;}
-.brief-card h4{font-family:'Source Serif 4',serif; font-size:17px; margin-bottom:4px;}
+.brief-card h4, .brief-card .h4{margin:0 0 4px; font-family:'Source Serif 4',serif; font-size:17px; margin-bottom:4px;}
 .brief-card .why{font-size:13px; color:var(--ink-soft); line-height:1.5; margin-bottom:10px; font-style:italic;}
 .brief-card ul{margin:0; padding-left:18px; font-size:13.5px; line-height:1.65; color:var(--ink);}
 .brief-card ul li{margin-bottom:3px;}
 
 .asa-box{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px; margin-bottom:22px; box-shadow:var(--shadow);}
-.asa-box h4{font-family:'Source Serif 4',serif; font-size:16px; margin-bottom:10px;}
+.asa-box h4, .asa-box .h4{font-family:'Source Serif 4',serif; font-size:16px; margin-bottom:10px;}
 table.asa-table{width:100%; border-collapse:collapse; font-size:13.5px;}
 table.asa-table td{padding:7px 6px; border-bottom:1px solid var(--line); vertical-align:top;}
 table.asa-table td.cls{font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--teal); white-space:nowrap; width:70px;}
 
 .brief-cta-row{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-top:6px;}
-.back-link{background:none; border:none; color:var(--ink-soft); font-size:13.5px; font-weight:600; text-decoration:underline; padding:0;}
+.back-link{background:none; border:none; color:var(--ink-soft); font-size:13.5px; font-weight:600; text-decoration:underline; padding:10px 0; min-height:44px;}
+
+/* ---------- ASSESSMENT & PLAN SCREEN ---------- */
+.ap-form{display:flex; flex-direction:column; gap:16px;}
+.ap-form fieldset{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:14px 18px 16px; margin:0; box-shadow:var(--shadow);}
+.ap-form legend{font-family:'Source Serif 4',serif; font-weight:700; font-size:16px; padding:0 6px; margin-left:-6px;}
+.ap-form .hint{font-size:13px; color:var(--ink-soft); line-height:1.5; margin:2px 0 10px;}
+.choice-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:8px;}
+.choice-row{display:flex; flex-wrap:wrap; gap:8px;}
+.choice{display:flex; gap:10px; align-items:flex-start; border:1px solid var(--line); border-radius:8px; padding:11px 12px; background:#fff; font-size:14px; line-height:1.4; cursor:pointer; min-height:44px;}
+.choice input{margin:2px 0 0; width:18px; height:18px; flex-shrink:0; accent-color:var(--teal);}
+.choice:has(input:checked){border-color:var(--teal); background:var(--teal-pale);}
+.ap-form textarea{width:100%; min-height:130px; border:1px solid var(--line); border-radius:8px; padding:10px 12px; font-family:'Inter',sans-serif; line-height:1.5; resize:vertical;}
+.ap-actions{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;}
+
+/* ---------- REPORT CHECKLISTS ---------- */
+.checklist{list-style:none; padding:0 !important; margin:0;}
+.checklist li{display:flex; gap:10px; align-items:flex-start; padding:5px 0; border-bottom:1px solid rgba(0,0,0,0.06);}
+.checklist li:last-child{border-bottom:none;}
+.checklist .mark{font-family:'JetBrains Mono',monospace; font-weight:700; width:20px; flex-shrink:0; text-align:center;}
+.checklist .hit .mark{color:var(--green);}
+.checklist .miss .mark{color:var(--rose);}
+.crit-tag{display:inline-block; font-family:'JetBrains Mono',monospace; font-size:10px; padding:1px 6px; border-radius:8px; background:var(--rose); color:#fff; font-weight:700; margin-left:6px; vertical-align:1px;}
+.compare-table{width:100%; border-collapse:collapse; font-size:14px;}
+.compare-table th, .compare-table td{text-align:left; padding:8px 6px; border-bottom:1px solid var(--line); vertical-align:top;}
+.compare-table th{font-size:12px; color:var(--ink-soft); font-weight:600;}
+.report-actions{display:flex; flex-wrap:wrap; gap:10px; margin-top:6px;}
+.report-actions .secondary{background:#fff; color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:12px 16px; font-weight:600; font-size:14.5px;}
+.note-small{font-size:12.5px; color:var(--ink-soft); line-height:1.5; margin:4px 0 14px;}
+
+.disclaimer{margin-top:34px; padding-top:14px; border-top:1px solid var(--line); font-size:12.5px; color:var(--ink-soft); line-height:1.6;}
+
+@media (prefers-reduced-motion: reduce){
+  *{transition:none !important; animation-duration:2s !important;}
+}
+@media print{
+  body{background:#fff;}
+  #app{max-width:none; padding:0;}
+  .no-print, .again-btn, .report-actions{display:none !important;}
+  .score-hero{background:#fff; color:var(--ink); border:2px solid var(--ink);}
+  .score-hero .verdict, .score-hero .label, .score-hero .num span{color:var(--ink);}
+  .report-section, .domain-card{break-inside:avoid;}
+}
 </style>
 </head>
 <body>
 <div id="app"></div>
+<div id="sr-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
 <script>
-/* ============================= CASE DATA ============================= */
+/* ============================= CASE DATA =============================
+   Each case has:
+   - chart: the ground truth the AI patient role-plays from (students never see it)
+   - exam: one finding per physical-exam maneuver (see EXAM_GROUPS)
+   - keyHistory: checklist items, matched against what the student typed/said.
+       `any` is a list of alternatives; an alternative is a regex, or an array of
+       regexes that must ALL appear somewhere in the student's questions.
+   - answer: the expected Assessment & Plan, used to score the student's own A&P
+*/
+
+// Reusable keyword patterns for the history checklist (matched on lower-cased student text)
+const P = {
+  npo: /\b(eat|ate|eaten|eating|drink|drank|drunk|drinking|food|fast|fasted|fasting|npo|meal|breakfast|dinner|lunch|snack|nothing by mouth|empty stomach)\b/,
+  allergy: /allerg|\breactions? to (any )?(med|drug|antibiotic)/,
+  prevAnes: /(an(a)?esthe|put (you |him |her )?(to sleep|under)|been (put )?under|(surger(y|ies)|operations?|procedures?) (before|in the past|previously)|previous (surger|operation|procedure)|prior (surger|operation|procedure)|ever had (an? )?(surger|operation|procedure|an(a)?esthe)|other (surger|operation|procedure))/,
+  famAnes: /(family|relative|parents?|mother|father|mom|dad|brother|sister|sibling|cousin|aunt|uncle|grand).{0,80}(an(a)?esthe|surger|operation|reaction|problem)|(an(a)?esthe|surger|reaction).{0,80}(family|relative|parents?|mother|father|mom|dad|brother|sister|sibling|cousin|anyone (else )?related)/,
+  meds: /(medication|medicine|\bmeds?\b|pills?|prescri|supplement|vitamin|over the counter|\botc\b|what do you take|taking anything|take any|tablets?|injections?|inhaler|insulin|drugs? (do|are) you)/,
+  cardiac: /(chest|heart|palpitat|angina|short(ness)? of breath|breathless|winded|exertion|faint|pass(ed)? out|syncope)/,
+  pulm: /(breath|lung|asthma|wheez|cough|copd|pneumonia)/,
+  smoking: /(smok|cigar|tobacco|vape|vaping|nicotine|pack)/,
+  alcohol: /(alcohol|beer|wine|liquor|whiske?y|vodka|drinks? (a|per) (day|week|night)|how much do you drink|do you drink)/,
+  functional: /(stairs|flights?|walk|blocks?|exercise|activ(e|ity|ities)|tolerance|\bmets?\b|get around|keep up|day to day|yard ?work|chores|hill)/,
+  pregnancy: /(pregnan|period|menstrua|\blmp\b|birth control|contracepti)/,
+  concerns: /(questions?|concerns?|worr|nervous|anxious|scared|anything else|is there anything|what matters)/,
+  openEnded: /(tell me|describe|what brings|how are you|how have you been|how.{0,12}feeling|walk me through|what happened|in your own words)/,
+  osa: /(snor|sleep apn|apn(o)?ea|cpap|stop(s|ped)? breathing|tired during the day|daytime (sleep|tired)|sleep study)/,
+  bleeding: /(bleed|bruis|blood thinner|anticoag|clot|nosebleed|nose bleed)/,
+  antithromb: /(blood thinner|anticoag|antiplatelet|aspirin|plavix|clopidogrel|eliquis|apixaban|xarelto|rivaroxaban|warfarin|coumadin|heparin|lovenox|enoxaparin)/,
+  lastDose: /(last (dose|took|time you took|pill|shot|injection)|when did (you|he|she) (last )?take|when.{0,25}(last|stop)|stopp?ed|\bhold|\bheld|how long ago)/,
+  nsaid: /(ibuprofen|advil|motrin|aleve|naproxen|nsaid|anti-?inflammator)/
+};
+
 const CASES = {
   chen: {
     id:'chen', tab:'ROOM 4 · ELECTIVE', name:'Maria Chen', age:45, sex:'female',
@@ -300,36 +382,51 @@ const CASES = {
       pmh:'Mild GERD (acid reflux), managed with omeprazole. No diabetes, no heart or lung disease, no asthma.',
       psh:'None. Never had surgery before.',
       anesthesiaHistory:'Never had anesthesia before, this would be her first time.',
-      medications:'Omeprazole 20mg once daily. Oral contraceptive pill.',
+      medications:'Omeprazole 20mg once daily (took it this morning with a sip of water). Oral contraceptive pill.',
       allergies:'No known drug allergies.',
-      familyHistory:"Her mother mentioned once, years ago, that she had 'some kind of bad reaction' during a surgery, but Maria doesn't know details and it's never come up as a problem for anyone else in the family. Not sure if it was nausea, an allergic thing, or something else — genuinely vague on this.",
+      familyHistory:"Her mother mentioned once, years ago, that she had 'some kind of bad reaction' during a surgery, but Maria doesn't know details and it's never come up as a problem for anyone else in the family. Not sure if it was nausea, an allergic thing, or something else — genuinely vague on this. If asked specifically, she has never heard of anyone having a high fever or stiff muscles during surgery.",
       socialHistory:'Non-smoker. Drinks wine occasionally, maybe 2-3 glasses a week. No recreational drug use. Works as a high school teacher.',
       npoStatus:'Ate dinner last night around 7pm, nothing to eat or drink since midnight, procedure is this morning.',
       reviewOfSystems:'No chest pain, no shortness of breath, no palpitations. Occasional heartburn if she eats late, otherwise nothing. No history of fainting.',
-      exam:{
-        vitals:'BP 118/76, HR 72 regular, RR 14, SpO2 99% on room air, Temp 36.7°C, BMI 24',
-        airway:'Mallampati class II, mouth opening 4cm, full natural dentition, no loose teeth, neck flexion/extension full and normal, thyromental distance normal (>6.5cm)',
-        heart:'Regular rate and rhythm, no murmurs, no jugular venous distension',
-        lungs:'Clear to auscultation bilaterally, no wheezes or crackles',
-        general:'Well-appearing, no acute distress, no edema'
-      }
+      functionalCapacity:'Walks 30-40 minutes most days and climbs stairs at school all day without any trouble.',
+      pregnancy:'On the birth control pill, last period ended about 2 weeks ago, no chance she is pregnant as far as she knows; fine with a pregnancy test if the team needs one.',
+      concerns:'Nervous because it is her first surgery; wants to know if she will feel sick afterwards.'
     },
-    keyHistoryItems:[
-      'Confirmed NPO status / last oral intake',
-      'Asked about drug allergies',
-      'Asked about prior anesthesia experience',
-      'Asked about family history of anesthesia problems',
-      'Asked about current medications',
-      'Asked about GERD / reflux (aspiration risk relevant to induction)',
-      'Screened for cardiac or pulmonary symptoms'
+    exam:{
+      vitals:'BP 118/76, HR 72 regular, RR 14, SpO2 99% on room air, Temp 36.7°C, BMI 24',
+      general:'Well-appearing, no acute distress, no edema',
+      mallampati:'Mallampati class II',
+      mouthOpening:'4 cm (about three fingerbreadths)',
+      thyromental:'Normal (>6.5 cm)',
+      neck:'Full flexion and extension',
+      dentition:'Full natural dentition, no loose teeth',
+      neckCirc:'34 cm',
+      heart:'Regular rate and rhythm, no murmurs',
+      jvdEdema:'No jugular venous distension, no peripheral edema',
+      lungs:'Clear to auscultation bilaterally, no wheezes or crackles'
+    },
+    keyHistory:[
+      {label:'Confirmed NPO status / last oral intake', any:[P.npo]},
+      {label:'Asked about drug allergies', any:[P.allergy]},
+      {label:'Asked about prior anesthesia experience', any:[P.prevAnes]},
+      {label:'Asked about family history of anesthesia problems', any:[P.famAnes], critical:true},
+      {label:'Followed up on the vague family "reaction" (what kind? fever? muscle rigidity?)', any:[/(fever|temperature|rigid|stiff|muscle|what (kind|type|sort) of (reaction|problem)|what happened|malignant hyperthermia|\bmh\b)/], critical:true},
+      {label:'Asked about current medications', any:[P.meds]},
+      {label:'Asked about GERD / reflux (aspiration risk)', any:[/(reflux|gerd|heartburn|acid|indigestion|omeprazole)/]},
+      {label:'Screened for cardiac or pulmonary symptoms', any:[P.cardiac, P.pulm]},
+      {label:'Asked about functional capacity / exercise tolerance', any:[P.functional]},
+      {label:'Asked about possibility of pregnancy', any:[P.pregnancy]}
     ],
-    keyExamItems:['airway','heart','lungs','vitals'],
+    keyExamExtra:[],
     asaClass:'ASA II (due to GERD)',
+    answer:{ asa:[2], risks:['aspiration'], okRisks:['mh'], airway:['reassuring'], disposition:['proceed','modify'],
+      why:'Low-risk patient: GERD raises aspiration risk (consider aspiration precautions), airway exam is reassuring, and the vague family history should be explored — when it turns out to be non-specific, it is reasonable to proceed.' },
     redFlag:'The vague family history of a "bad reaction" to anesthesia deserves a follow-up question — even though it turns out not to be a clear MH history here, a good student should try to pin it down rather than let it pass.',
     teachingPoints:[
       'This is a "straightforward" case designed to test thoroughness, not crisis recognition — the skill being tested is not missing anything even when nothing looks alarming.',
       'A vague, non-specific family history of an anesthesia "reaction" should always be pursued further (what kind of reaction, was it a young relative, was there fever/muscle rigidity) rather than dismissed.',
-      'GERD raises aspiration risk and can influence induction technique (e.g., rapid sequence induction) — worth flagging even in a low-risk patient.'
+      'GERD raises aspiration risk and can influence induction technique (e.g., rapid sequence induction) — worth flagging even in a low-risk patient.',
+      'Ask anyone who could be pregnant about the possibility of pregnancy — many centers require a pregnancy test before elective surgery.'
     ]
   },
 
@@ -348,25 +445,37 @@ const CASES = {
       socialHistory:'Former smoker, quit 10 years ago, about a 30 pack-year history before that. Drinks alcohol rarely, maybe a beer on holidays. Retired mechanic.',
       npoStatus:'Fell about 6 hours ago; he last ate breakfast around 3 hours before the fall, so roughly 9 hours ago now, and has had nothing since (traumatic/semi-urgent case, not a fully elective fasting window).',
       reviewOfSystems:'Admits to occasional chest tightness when climbing stairs, goes away with rest — has not mentioned this to his cardiologist recently. Wife says he snores loudly and she has seen him stop breathing briefly during sleep. He feels tired during the day. No fevers, no recent illness.',
-      exam:{
-        vitals:'BP 152/94, HR 88 and occasionally irregular, RR 18, SpO2 94% on room air, Temp 37.0°C, BMI 34',
-        airway:'Mallampati class III, short thick neck, limited neck extension due to cervical arthritis, reduced thyromental distance (~5.5cm), one loose upper incisor noted',
-        heart:'Regular but occasionally irregular rhythm noted, no obvious murmur, no significant JVD',
-        lungs:'Mild bibasilar crackles that clear somewhat with cough, no wheezing',
-        general:'Uncomfortable due to hip pain, obese habitus, visible bruising to right hip'
-      }
+      functionalCapacity:'Before the fall: could climb one flight of stairs but had to stop because of chest tightness; walks slowly around the block.',
+      concerns:'Wants to know how long he will be in the hospital and whether his heart will be okay.'
     },
-    keyHistoryItems:[
-      'Asked about OSA and CPAP compliance',
-      'Asked about cardiac history including the stent and any current chest pain/exertional symptoms',
-      'Clarified antiplatelet/anticoagulant status (aspirin vs. clopidogrel, timing)',
-      'Asked about NPO status given the traumatic/semi-urgent nature',
-      'Asked about drug allergies',
-      'Asked about diabetes control and medication timing',
-      'Asked about smoking history'
+    exam:{
+      vitals:'BP 152/94, HR 88 and occasionally irregular, RR 18, SpO2 94% on room air, Temp 37.0°C, BMI 34',
+      general:'Uncomfortable due to hip pain, obese habitus, visible bruising to right hip',
+      mallampati:'Mallampati class III',
+      mouthOpening:'3.5 cm',
+      thyromental:'Reduced (~5.5 cm)',
+      neck:'Short, thick neck; limited extension due to cervical arthritis',
+      dentition:'One loose upper incisor',
+      neckCirc:'46 cm',
+      heart:'Regular but occasionally irregular rhythm, no obvious murmur',
+      jvdEdema:'No significant JVD, no peripheral edema',
+      lungs:'Mild bibasilar crackles that clear somewhat with cough, no wheezing'
+    },
+    keyHistory:[
+      {label:'Asked about OSA and CPAP compliance', any:[P.osa], critical:true},
+      {label:'Asked about cardiac history and current chest pain / exertional symptoms', any:[P.cardiac], critical:true},
+      {label:'Clarified antiplatelet status and timing (aspirin vs. clopidogrel)', any:[[P.antithromb, P.lastDose]], critical:true},
+      {label:'Asked about NPO status given the semi-urgent nature', any:[P.npo]},
+      {label:'Asked about drug allergies', any:[P.allergy]},
+      {label:'Asked about diabetes control and medication timing', any:[/(diabet|sugar|glucose|metformin|a1c)/]},
+      {label:'Asked about smoking history', any:[P.smoking]},
+      {label:'Asked about functional capacity before the fall', any:[P.functional]},
+      {label:'Asked about prior anesthesia', any:[P.prevAnes]}
     ],
-    keyExamItems:['airway','heart','lungs','vitals'],
+    keyExamExtra:['neckCirc','jvdEdema'],
     asaClass:'ASA III (consider IV if exertional chest tightness represents unstable symptoms)',
+    answer:{ asa:[3,4], risks:['difficultAirway','osa','cardiac','bleeding'], okRisks:['aspiration','pulmonary','glycemic','drugAllergy','delirium'], airway:['difficult'], disposition:['modify','delay'],
+      why:'Predicted difficult airway plus untreated OSA, new exertional chest tightness with a coronary stent, and a recent antiplatelet change. Hip fixation should not be delayed long, so most would proceed with a difficult-airway plan and cardiology input, or briefly delay for cardiac evaluation.' },
     redFlag:'Untreated/undertreated OSA plus a difficult-airway exam (Mallampati III, limited neck extension, short neck) plus new-ish exertional chest tightness in a patient with known CAD — this is the case\'s central teaching point: recognizing a difficult airway AND unclear cardiac stability before a semi-urgent case.',
     teachingPoints:[
       'Poor CPAP compliance in a known OSA patient meaningfully raises perioperative respiratory risk (STOP-BANG type reasoning) and should change the plan for opioid dosing/monitoring.',
@@ -385,38 +494,477 @@ const CASES = {
       pmh:'Mild asthma since childhood, uses an albuterol inhaler occasionally, last flare-up about 2 years ago, has never been hospitalized for it.',
       psh:'None. This would be her first surgery.',
       anesthesiaHistory:'Never had anesthesia herself.',
-      medications:'Albuterol inhaler as needed. A daily multivitamin.',
+      medications:'Albuterol inhaler as needed (last used about a month ago). A daily multivitamin.',
       allergies:'No known drug allergies.',
       familyHistory:"Her cousin on her mother's side died during a surgery as a child — family always described it vaguely as 'a bad reaction to the anesthesia medicine' and remembers hearing he had a 'really high fever' during the operation. She doesn't know more specifics like which relative's side exactly, what surgery, or what medications were used, but this has always stuck with her and makes her nervous about anesthesia.",
       socialHistory:'Non-smoker, social alcohol use on weekends, no recreational drugs. College student, works part-time as a barista.',
       npoStatus:'Fasting appropriately — nothing to eat or drink since midnight, surgery scheduled this morning.',
       reviewOfSystems:'Occasional wheeze with exercise, otherwise no cardiac or pulmonary symptoms. No fevers, no muscle problems, no prior issues with heat.',
-      exam:{
-        vitals:'BP 110/70, HR 78 regular, RR 16, SpO2 100% on room air, Temp 36.8°C, BMI 22',
-        airway:'Mallampati class I, mouth opening excellent, full dentition, full neck range of motion, normal thyromental distance',
-        heart:'Regular rate and rhythm, no murmurs',
-        lungs:'Clear bilaterally, mild expiratory wheeze noted only with forced exhalation',
-        general:'Well-appearing, anxious affect, no acute distress'
-      }
+      functionalCapacity:'Very active — played college club soccer until the injury.',
+      pregnancy:'Last period started about 3 weeks ago; sexually active and uses condoms; would agree to a pregnancy test.',
+      concerns:'Very nervous because of what happened to her cousin; wants to know if that could happen to her.'
     },
-    keyHistoryItems:[
-      'Asked about family history in detail (not just surface-level "any family problems with anesthesia?")',
-      'Followed up on the cousin\'s death — tried to get specifics (fever, muscle rigidity, age, which surgery)',
-      'Asked about her own asthma control and triggers',
-      'Asked about NPO status',
-      'Asked about drug allergies',
-      'Asked about her own anesthesia history'
+    exam:{
+      vitals:'BP 110/70, HR 78 regular, RR 16, SpO2 100% on room air, Temp 36.8°C, BMI 22',
+      general:'Well-appearing, anxious affect, no acute distress',
+      mallampati:'Mallampati class I',
+      mouthOpening:'Excellent (>4 cm)',
+      thyromental:'Normal (>6.5 cm)',
+      neck:'Full range of motion',
+      dentition:'Full natural dentition',
+      neckCirc:'31 cm',
+      heart:'Regular rate and rhythm, no murmurs',
+      jvdEdema:'No JVD, no edema',
+      lungs:'Clear bilaterally, mild expiratory wheeze noted only with forced exhalation'
+    },
+    keyHistory:[
+      {label:'Asked about family history of anesthesia problems (in detail, not just surface level)', any:[P.famAnes], critical:true},
+      {label:'Followed up on the cousin\'s death — tried to get specifics (fever, muscle rigidity, age, which surgery)', any:[/(fever|temperature|\bhot\b|rigid|stiff|muscle|how old|did (he|they) (die|survive)|what (kind|type|sort) of (reaction|surgery|operation)|what happened|malignant hyperthermia|\bmh\b)/], critical:true},
+      {label:'Asked about her own asthma control and triggers', any:[/(asthma|inhaler|albuterol|wheez|flare|attack|trigger)/]},
+      {label:'Asked about NPO status', any:[P.npo]},
+      {label:'Asked about drug allergies', any:[P.allergy]},
+      {label:'Asked about her own anesthesia history', any:[P.prevAnes]},
+      {label:'Asked about possibility of pregnancy', any:[P.pregnancy]}
     ],
-    keyExamItems:['airway','heart','lungs','vitals'],
+    keyExamExtra:[],
     asaClass:'ASA II (asthma) — with a pending malignant hyperthermia risk flag requiring further workup before proceeding',
+    answer:{ asa:[2], risks:['mh','pulmonary'], okRisks:[], airway:['reassuring'], disposition:['modify','delay'],
+      why:'A family history strongly suggestive of malignant hyperthermia: either proceed with a fully non-triggering anesthetic (no volatile agents or succinylcholine) and MH precautions, or delay this elective case for MH counseling/testing.' },
     redFlag:'A family history strongly suggestive of malignant hyperthermia (childhood surgical death with high fever) is the entire point of this case. A student who does not dig into a vague "bad reaction to anesthesia" family history, or who does not recognize fever + death during surgery as an MH red flag, has missed the critical finding of this encounter.',
     teachingPoints:[
       'Never accept a vague family history of an anesthesia "reaction" at face value — always ask what kind of reaction, and specifically about fever, muscle rigidity, and whether the relative survived.',
       'A childhood surgical death associated with high fever is a classic story for malignant hyperthermia (MH) and should trigger consideration of a non-triggering anesthetic technique (avoiding succinylcholine and volatile agents) and possibly referral for MH testing before an elective case.',
       'Mild, well-controlled asthma is a minor consideration here compared to the family history — this case rewards students who don\'t get anchored on the "obvious" finding (asthma) and miss the subtler, more dangerous one.'
     ]
+  },
+
+  martinez: {
+    id:'martinez', tab:'PEDS PRE-OP · ELECTIVE', name:'Leo Martinez', age:6, sex:'male',
+    speaker:{name:'Ana Martinez', relation:'mother', sex:'female'},
+    procedure:'Tonsillectomy and adenoidectomy',
+    summary:'6M with loud snoring and recurrent strep — you are interviewing his mother.',
+    opening:"Hi — are you here for Leo? He's a little shy, so I'll probably be doing most of the talking.",
+    chart:{
+      chiefComplaint:'Loud snoring every night for over a year with pauses in his breathing, and repeated strep throat. Here to have his tonsils and adenoids out.',
+      pmh:'Born full-term, no NICU stay, normal development. Snores loudly every night; mom has watched him pause breathing and gasp; restless sleep, cranky and tired during the day. Strep throat 5 times this year. No asthma diagnosis, though he "gets a little wheezy with colds sometimes." He caught a cold about 10 days ago — runny nose and a wet cough that is still there, worse at night. No fever in the last week.',
+      psh:'Ear tubes at age 2.',
+      anesthesiaHistory:'Had anesthesia for ear tubes at age 2. Mom remembers he was very upset and thrashing when he woke up, but there were no breathing problems.',
+      medications:"Children's ibuprofen as needed for sore throats (last dose 2 days ago). Children's multivitamin. No inhalers.",
+      allergies:'No known drug allergies. No latex allergy.',
+      familyHistory:'No family history of anesthesia problems. No bleeding disorders in the family.',
+      socialHistory:'Lives with mom, dad, and a 3-year-old sister. Dad smokes cigarettes, mostly outside but sometimes in the car with the kids. In kindergarten. Vaccines up to date.',
+      npoStatus:"Mom will say he skipped breakfast and hasn't eaten. HIDDEN DETAIL: about 2 hours ago, in the car on the way here, grandma gave him a handful of crackers and a small glass of milk because he was crying from hunger. Mom only remembers and admits this if the student asks specifically about anything at all — even a snack, a sip, or something in the car — this morning. Surgery is scheduled in about 30 minutes.",
+      reviewOfSystems:'Ongoing nighttime cough and clear runny nose from the recent cold. No fever this week. No easy bruising or nosebleeds. Eats and drinks normally.',
+      functionalCapacity:'Very active — plays soccer and keeps up with other kids.',
+      concerns:'Worried he will wake up upset like last time; asks whether she can stay with him while he falls asleep.'
+    },
+    persona:'You are the patient\'s mother, answering on his behalf. If the student speaks to Leo directly, answer as the mother ("He says...") and keep it light. You are a loving, slightly frazzled parent.',
+    exam:{
+      vitals:'HR 98, BP 102/64, RR 22, SpO2 97% on room air, Temp 37.4°C, weight 22 kg',
+      general:'Active, mildly anxious, clinging to mom; clear nasal discharge; intermittent wet cough',
+      mallampati:'Cooperative for mouth exam: tonsils very large (grade 3+), nearly touching in the midline',
+      mouthOpening:'Normal for age',
+      thyromental:'Normal for age',
+      neck:'Full range of motion',
+      dentition:'Primary teeth; one upper front tooth is loose',
+      neckCirc:'Normal for age',
+      heart:'Regular rate and rhythm, no murmur',
+      jvdEdema:'No JVD, no edema',
+      lungs:'Coarse upper-airway sounds that clear with coughing; no wheeze at rest'
+    },
+    keyHistory:[
+      {label:'Asked specifically about anything eaten or drunk this morning — including snacks or sips', any:[[P.npo, /(this morning|today|on the way|in the car|anything at all|even a|snack|sip|bite|candy|gum|milk|juice|cracker)/]], critical:true},
+      {label:'Asked about recent illness / cold / cough', any:[/(cold|sick|\bill\b|illness|cough|runny|fever|congest|stuffy|virus|infection)/], critical:true},
+      {label:'Asked about snoring, breathing pauses, or sleep apnea symptoms', any:[P.osa]},
+      {label:'Asked about bleeding problems (personal or family)', any:[P.bleeding]},
+      {label:'Asked about prior anesthesia', any:[P.prevAnes]},
+      {label:'Asked about drug allergies', any:[P.allergy]},
+      {label:'Asked about medications', any:[P.meds]},
+      {label:'Asked about smoke exposure at home', any:[P.smoking]},
+      {label:'Asked about birth history / development', any:[/(born|birth|premature|preemie|nicu|full.?term|develop|milestone)/]}
+    ],
+    keyExamExtra:['general'],
+    asaClass:'ASA II (sleep-disordered breathing)',
+    answer:{ asa:[2], risks:['aspiration','osa','pulmonary'], okRisks:['difficultAirway'], airway:['reassuring','difficult'], disposition:['delay'],
+      why:'Milk and crackers 2 hours ago is a fasting violation (6 hours needed for nonhuman milk and a light meal), so this elective case must be delayed. The recent cold with ongoing cough also raises laryngospasm/bronchospasm risk and may justify postponing further.' },
+    redFlag:'A hidden fasting violation (milk and crackers in the car 2 hours ago) only surfaces if the student asks carefully, plus a recent upper respiratory infection with ongoing cough — an elective case that should not go ahead now.',
+    teachingPoints:[
+      'With children, ask the parent specifically about ANY food or drink — snacks in the car and well-meaning relatives are classic sources of fasting violations. ASA fasting guidance: clear liquids 2 h, breast milk 4 h, infant formula / nonhuman milk / light meal 6 h, fatty or fried food 8 h.',
+      'A recent upper respiratory infection (within about 2 weeks) increases the risk of laryngospasm, bronchospasm and desaturation; secondhand smoke adds to airway reactivity. Weigh postponing an elective case.',
+      'Children with obstructive sleep-disordered breathing are more sensitive to opioids and need careful post-op monitoring — some will need overnight observation.',
+      'Before tonsillectomy, ask about personal or family bleeding problems. Document loose teeth and warn the family — a loose tooth can be dislodged during airway management.'
+    ]
+  },
+
+  johnson: {
+    id:'johnson', tab:'LABOR & DELIVERY · SCHEDULED', name:'Aisha Johnson', age:32, sex:'female',
+    procedure:'Scheduled repeat cesarean delivery at 39 weeks (planned spinal anesthesia)',
+    summary:'32F, 39 weeks pregnant, here for a planned repeat C-section.',
+    chart:{
+      chiefComplaint:'Here for her scheduled repeat C-section; first baby was breech 3 years ago.',
+      pmh:'Second pregnancy, currently 39 weeks. No high blood pressure before pregnancy. Mild anemia in pregnancy, on iron. HIDDEN SYMPTOMS: since yesterday she has had a headache that Tylenol is not helping, since this morning she has seen "sparkles" or spots in her vision, her face and hands feel puffier, and she has a dull ache under her right ribs. She assumes it is stress and does NOT bring any of this up unless asked how she is feeling, or asked about headache, vision, swelling, or belly pain.',
+      psh:'Cesarean delivery 3 years ago. Wisdom teeth removed at 19.',
+      anesthesiaHistory:'Spinal anesthesia for her first C-section went well (some itching afterward). IV sedation for wisdom teeth, no problems.',
+      medications:'Prenatal vitamin, iron tablets, and low-dose aspirin 81 mg daily that her OB started early in pregnancy "to prevent high blood pressure" — she stopped the aspirin at 36 weeks as instructed. Took Tylenol twice yesterday for the headache.',
+      allergies:'Sulfa antibiotics — hives.',
+      familyHistory:'Her mother had "high blood pressure in pregnancy." No anesthesia problems in the family. No bleeding disorders.',
+      socialHistory:'Non-smoker, no alcohol during pregnancy. Accountant. Married; her husband is here.',
+      npoStatus:'Ate dry toast at 5am, sips of water until 11am; surgery is at 1pm.',
+      reviewOfSystems:'Baby is moving well, no contractions, no leaking fluid, no bleeding. No chest pain or shortness of breath. No easy bruising or bleeding gums. (Headache, vision changes, swelling and right-sided rib pain as above — only if asked.)',
+      functionalCapacity:'Was walking 30 minutes a day until about a week ago; no trouble with stairs.',
+      concerns:'Wants to be awake for the birth and have her husband in the room.'
+    },
+    exam:{
+      vitals:'BP 162/104 (repeat 158/106), HR 92, RR 18, SpO2 98% on room air, Temp 36.9°C, BMI 31 (26 before pregnancy)',
+      general:'Facial puffiness, appears uncomfortable; brisk (3+) reflexes with 2 beats of ankle clonus',
+      mallampati:'Mallampati class III (class II at her first prenatal visit)',
+      mouthOpening:'>4 cm',
+      thyromental:'6 cm',
+      neck:'Full range of motion',
+      dentition:'Intact',
+      neckCirc:'38 cm',
+      heart:'Regular, soft 2/6 systolic flow murmur',
+      jvdEdema:'No JVD; 2+ pitting edema of the legs and hands',
+      lungs:'Clear bilaterally'
+    },
+    keyHistory:[
+      {label:'Asked about headache, vision changes, swelling or RUQ/epigastric pain (preeclampsia symptoms)', any:[/(headache|head ache|vision|visual|see(ing)? (spots|stars|sparkles)|spots|blurr|swell|puff|right (side|upper)|under (your|the) ribs|belly pain|stomach pain|abdominal pain|epigastr|how (are|have) you (been )?feeling|how do you feel)/], critical:true},
+      {label:'Asked about blood pressure history in this pregnancy', any:[/(blood pressure|hypertens|\bbp\b|pre-?eclampsia|toxemia)/]},
+      {label:'Asked about prior anesthesia (including the previous spinal)', any:[P.prevAnes]},
+      {label:'Asked about medications, including aspirin or blood thinners', any:[P.meds, P.antithromb]},
+      {label:'Asked about bleeding or bruising problems', any:[P.bleeding]},
+      {label:'Asked about NPO status', any:[P.npo]},
+      {label:'Asked about drug allergies', any:[P.allergy]},
+      {label:'Asked about the pregnancy / baby (contractions, movement, course)', any:[/(baby|weeks|contraction|due date|prenatal|\bob\b|obstetric|moving)/]}
+    ],
+    keyExamExtra:['general','jvdEdema'],
+    asaClass:'ASA III (preeclampsia with severe features; pregnancy alone would be ASA II)',
+    answer:{ asa:[3], risks:['hypertensiveDisorder','aspiration','difficultAirway'], okRisks:['bleeding','cardiac'], airway:['difficult'], disposition:['modify','delay'],
+      why:'Severe-range blood pressure with headache, visual symptoms and RUQ pain = preeclampsia with severe features. Notify OB, treat BP, start magnesium, and check platelets/labs before a spinal. Delivery is the treatment, so the plan is modified (or briefly delayed to stabilize), not cancelled. Pregnancy plus a worsening Mallampati means preparing for a difficult airway and aspiration precautions.' },
+    redFlag:'Hidden symptoms of preeclampsia with severe features (persistent headache, visual "sparkles", RUQ pain) with severe-range blood pressure. The student must ask how she is feeling, act on the BP, and get a platelet count before a spinal.',
+    teachingPoints:[
+      'Ask every late-pregnancy patient about headache, visual changes, RUQ/epigastric pain and swelling — patients often attribute these to stress or normal pregnancy.',
+      'BP ≥160/110 with symptoms suggests preeclampsia with severe features: notify OB, treat the blood pressure, start magnesium for seizure prophylaxis, and send labs (platelets, liver enzymes, creatinine).',
+      'Check the platelet count (and its trend) before neuraxial anesthesia — HELLP-related thrombocytopenia can rule out a spinal. Low-dose aspirin by itself is not a contraindication to neuraxial anesthesia.',
+      'Pregnancy increases aspiration risk and airway edema, and preeclampsia makes airway swelling worse (her Mallampati class has risen). Neuraxial anesthesia is preferred when safe, but always have a difficult-airway plan.'
+    ]
+  },
+
+  brooks: {
+    id:'brooks', tab:'ROOM 3 · ELECTIVE', name:'Daniel Brooks', age:58, sex:'male',
+    procedure:'Elective laparoscopic inguinal hernia repair',
+    summary:'58M with type 2 diabetes on insulin and a weekly injection — it\'s all in the details.',
+    chart:{
+      chiefComplaint:'Here to fix a bulge in his right groin that has been growing for a year.',
+      pmh:'Type 2 diabetes for 12 years, last A1c 8.6%. High blood pressure. Obesity. Started a weekly semaglutide (Ozempic) injection 4 months ago for diabetes and weight; has lost 25 pounds. Numbness in both feet.',
+      psh:'Knee arthroscopy 10 years ago. Colonoscopy 3 years ago.',
+      anesthesiaHistory:'General anesthesia for the knee scope and sedation for the colonoscopy — no problems.',
+      medications:'Insulin glargine 40 units every evening — he took his FULL usual 40 units last night because nobody told him to change it. Metformin 1000 mg twice daily (took this morning\'s dose with a sip of water). Semaglutide (Ozempic) 1 mg weekly injection — dose was increased 3 weeks ago, last injection 3 days ago. Lisinopril 20 mg daily (took it this morning). Atorvastatin. He may not mention the weekly injection when listing "pills" unless asked about injections or all medications.',
+      allergies:'No known drug allergies.',
+      familyHistory:'Father had diabetes. No anesthesia problems in the family.',
+      socialHistory:'Never smoker. One or two beers on weekends. Truck dispatcher. Married.',
+      npoStatus:'Big steak dinner at 8pm last night. Checked his sugar at 6:45am and it was 68 and he felt shaky, so he drank a small glass of apple juice at 7am. Surgery is at 9:30am.',
+      reviewOfSystems:'Since the Ozempic dose went up 3 weeks ago: nauseated most days, bloated, feels full after a few bites, and vomited two days ago — it was food he had eaten the night before. He only mentions these if asked about his stomach, nausea, vomiting, appetite or side effects. No chest pain. Wife says he snores loudly; never had a sleep study.',
+      functionalCapacity:'Can climb two flights of stairs slowly; gets winded but no chest pain. Walks the dog 20 minutes a day.',
+      concerns:'Wants to know when he can eat after surgery and whether his sugars will be okay.'
+    },
+    exam:{
+      vitals:'BP 146/88, HR 84, RR 16, SpO2 97% on room air, Temp 36.6°C, BMI 36. Fingerstick glucose now: 112 mg/dL',
+      general:'Obese, no distress',
+      mallampati:'Mallampati class II',
+      mouthOpening:'4 cm',
+      thyromental:'7 cm',
+      neck:'Full range of motion',
+      dentition:'Intact; crown on a lower molar',
+      neckCirc:'43 cm',
+      heart:'Regular rate and rhythm, no murmur',
+      jvdEdema:'No JVD, no edema',
+      lungs:'Clear bilaterally'
+    },
+    keyHistory:[
+      {label:'Asked about medications (including injections)', any:[P.meds]},
+      {label:'Clarified the weekly semaglutide (GLP-1) injection and when it was last taken', any:[[/(ozempic|semaglutide|wegovy|mounjaro|tirzepatide|glp|trulicity|dulaglutide|weekly|injection|shot)/, P.lastDose]], critical:true},
+      {label:'Asked about nausea, vomiting, fullness or other GI symptoms', any:[/(nause|vomit|throw(ing)? up|threw up|bloat|full|appetite|stomach|side effects?|constipat|reflux|heartburn)/], critical:true},
+      {label:'Asked about last night\'s insulin dose', any:[[/(insulin|glargine|lantus|basal|long.?acting)/, /(last night|dose|how much|units|took|take|evening)/]]},
+      {label:'Asked about blood sugar this morning / hypoglycemia', any:[/(sugar|glucose|fingerstick|finger stick|\blow\b|hypoglyc|shaky)/]},
+      {label:'Asked about diabetes control (e.g., A1c)', any:[/(a1c|control|diabet)/]},
+      {label:'Asked about NPO status', any:[P.npo]},
+      {label:'Asked about drug allergies', any:[P.allergy]},
+      {label:'Asked about functional capacity', any:[P.functional]},
+      {label:'Screened for sleep apnea (snoring, STOP-BANG)', any:[P.osa]}
+    ],
+    keyExamExtra:['neckCirc'],
+    asaClass:'ASA III (poorly controlled diabetes, BMI 36; ASA II also defensible)',
+    answer:{ asa:[2,3], risks:['aspiration','glycemic'], okRisks:['osa','cardiac'], airway:['reassuring'], disposition:['delay','modify'],
+      why:'Active GI symptoms on a GLP-1 receptor agonist suggest delayed gastric emptying — a "full stomach" despite fasting. For an elective case, delay is reasonable; if proceeding, use full-stomach precautions (e.g., gastric ultrasound, rapid sequence induction). He also took his full basal insulin dose and had a morning low, so glucose must be checked and managed.' },
+    redFlag:'Ongoing nausea, early fullness and vomiting of undigested food while on a recently increased GLP-1 receptor agonist — a real aspiration risk despite "NPO after midnight". Plus a full glargine dose with a morning glucose of 68.',
+    teachingPoints:[
+      'GLP-1 receptor agonists (semaglutide, tirzepatide, etc.) slow gastric emptying. Ask about them by name and about injections — patients often leave weekly shots out of a "pill" list.',
+      'Guidance on GLP-1 agonists before surgery is evolving (ASA 2023 consensus; 2024 multisociety guidance). Consistent themes: ask about GI symptoms on the day of surgery, consider delaying elective cases when they are present, and treat the patient as a full stomach if you proceed. Follow your institution\'s policy.',
+      'Basal insulin is usually reduced (often to about 75–80% of the usual dose) the evening before surgery; check glucose on arrival and treat values under 70 mg/dL.',
+      'He meets several STOP-BANG criteria (snoring, high blood pressure, BMI > 35, age > 50, neck > 40 cm, male) — screen for sleep apnea and plan opioid-sparing analgesia.'
+    ]
+  },
+
+  oneill: {
+    id:'oneill', tab:'ROOM 5 · ELECTIVE', name:"Margaret O'Neill", age:74, sex:'female',
+    procedure:'Elective right total knee replacement (planned spinal anesthesia)',
+    summary:'74F with atrial fibrillation on a blood thinner — when exactly was the last dose?',
+    chart:{
+      chiefComplaint:'Here for a right knee replacement; the arthritis pain has made walking very hard.',
+      pmh:'Atrial fibrillation diagnosed 3 years ago (no stroke), on a blood thinner. High blood pressure. Her doctor says her "kidneys are a little weak." Osteoarthritis.',
+      psh:'Cataract surgery on both eyes. Hysterectomy at age 45.',
+      anesthesiaHistory:'Hysterectomy under general anesthesia — she was very sick to her stomach and vomiting for a day afterward. Cataract surgeries with sedation were fine.',
+      medications:'Apixaban (Eliquis) 5 mg twice daily — the surgeon\'s office told her to "stop it before surgery," and she understood that as the day before, so her last dose was yesterday at 8am (about 26 hours ago). Metoprolol 50 mg daily (took it this morning). Amlodipine 5 mg daily. Acetaminophen for knee pain. A fish oil supplement.',
+      allergies:'Codeine — "it made me throw up." No rash, swelling or breathing trouble.',
+      familyHistory:'Nothing relevant; no anesthesia problems in the family.',
+      socialHistory:'Never smoked. A glass of wine with dinner occasionally. Widowed; lives with her daughter. Retired librarian.',
+      npoStatus:'Nothing to eat since 7pm last night; a small cup of black coffee at 5am. Surgery at 8am.',
+      reviewOfSystems:'Occasional palpitations, no chest pain. Mildly short of breath walking uphill. No fainting. Bruises easily on the blood thinner but no serious bleeding. No stroke symptoms.',
+      functionalCapacity:'Limited mostly by knee pain: can manage one flight of stairs slowly with the railing; walks with a cane.',
+      concerns:'Really does not want to be as sick to her stomach as after the hysterectomy.'
+    },
+    exam:{
+      vitals:'BP 138/82, HR 78 irregularly irregular, RR 16, SpO2 96% on room air, Temp 36.5°C, BMI 29. Chart labs: creatinine 1.4 mg/dL',
+      general:'Pleasant, walks with a cane, bruises on forearms',
+      mallampati:'Mallampati class II',
+      mouthOpening:'4 cm',
+      thyromental:'6.5 cm',
+      neck:'Mildly reduced extension (arthritis), adequate',
+      dentition:'Removable upper partial denture',
+      neckCirc:'36 cm',
+      heart:'Irregularly irregular rhythm, no murmur',
+      jvdEdema:'No JVD; trace ankle edema',
+      lungs:'Clear bilaterally'
+    },
+    keyHistory:[
+      {label:'Identified the anticoagulant and the exact time of the last dose', any:[[P.antithromb, P.lastDose]], critical:true},
+      {label:'Asked why she is anticoagulated / about AF and stroke history', any:[/(a-?fib|atrial|irregular|stroke|clot|why.{0,30}(blood thinner|eliquis|apixaban))/]},
+      {label:'Asked about kidney function', any:[/(kidney|renal|creatinine)/]},
+      {label:'Asked about prior anesthesia (PONV history)', any:[P.prevAnes]},
+      {label:'Asked about allergies and clarified the type of reaction', any:[[P.allergy, /(what (happens|happened|kind|type|sort)|how did you react|what did it do|what reaction|react)/]]},
+      {label:'Asked about dentures / loose teeth', any:[/(denture|false teeth|partial|bridge|loose teeth|teeth)/]},
+      {label:'Asked about functional capacity', any:[P.functional]},
+      {label:'Asked about cardiac symptoms', any:[P.cardiac]},
+      {label:'Asked about NPO status', any:[P.npo]}
+    ],
+    keyExamExtra:['jvdEdema'],
+    asaClass:'ASA III (atrial fibrillation on anticoagulation, chronic kidney disease; ASA II also defensible)',
+    answer:{ asa:[2,3], risks:['bleeding','cardiac'], okRisks:['delirium','drugAllergy'], airway:['reassuring'], disposition:['delay','modify'],
+      why:'Apixaban was last taken about 26 hours ago; neuraxial anesthesia generally requires about 72 hours off apixaban (longer with reduced kidney function), so the planned spinal cannot be done today. Options: delay this elective surgery, or change the plan (general anesthesia) after discussing bleeding risk with the surgeon.' },
+    redFlag:'"Stop it before surgery" was misunderstood: apixaban was last taken only ~26 hours ago, with reduced kidney function — the planned spinal is contraindicated today.',
+    teachingPoints:[
+      'For any blood thinner, ask the name, the dose, and the exact date and time of the last dose — vague instructions like "stop before surgery" are commonly misunderstood.',
+      'ASRA guidance: hold apixaban about 72 hours before neuraxial anesthesia; reduced kidney function prolongs its effect.',
+      '"Allergy" to codeine with vomiting is an intolerance, not an allergy — always ask what the reaction was.',
+      'Prior PONV, female sex, non-smoker and expected postoperative opioids are Apfel risk factors — she has all four, so plan multimodal PONV prophylaxis. Remove dentures before airway management.'
+    ]
+  },
+
+  whitaker: {
+    id:'whitaker', tab:'ROOM 1 · ELECTIVE', name:'Harold Whitaker', age:84, sex:'male',
+    procedure:'Transurethral resection of the prostate (TURP)',
+    summary:'Frail 84M with memory problems — think beyond the organ systems.',
+    chart:{
+      chiefComplaint:'Here for a prostate procedure because he cannot pass urine on his own and has needed a catheter.',
+      pmh:'Mild cognitive impairment diagnosed last year (his daughter manages his medications). High blood pressure. Enlarged prostate with urinary retention. Osteoporosis. Two falls in the past 6 months. Has lost about 12 pounds over the past year without trying.',
+      psh:'Hernia repair 5 years ago. Gallbladder removal 20 years ago.',
+      anesthesiaHistory:'General anesthesia for the hernia repair 5 years ago. He does not remember much, but his daughter told him he was "very confused for three days afterward and didn\'t know where he was."',
+      medications:'Lorazepam 1 mg every night for sleep (for many years). Diphenhydramine (Benadryl) on some nights "when the lorazepam isn\'t enough." Donepezil 10 mg. Tamsulosin. Lisinopril 10 mg. Vitamin D. He is vague on names and doses and may say "my daughter handles that."',
+      allergies:'No known drug allergies.',
+      familyHistory:'Nothing relevant.',
+      socialHistory:'Widower; lives alone in a two-story house; his daughter visits every day. Quit smoking 40 years ago. Has one whiskey most nights. Uses a cane.',
+      npoStatus:'Nothing to eat or drink since dinner at 6pm, except a sip of water with his pills this morning.',
+      reviewOfSystems:'More tired and weaker over the past year. No chest pain. Has to stop halfway up the stairs at home to catch his breath. Sometimes wakes up at night confused about where he is.',
+      functionalCapacity:'Stops halfway up one flight of stairs; needs his daughter\'s help with shopping and finances; dresses and bathes himself.',
+      codeStatus:'HIDDEN DETAIL: he signed a DNR / POLST form with his daughter last year (do not resuscitate, limited interventions). He only mentions it if asked about advance directives, code status, resuscitation, or what he would want if something went wrong. He is not sure whether it applies during surgery.',
+      concerns:'Worried about "ending up in a nursing home" after this.'
+    },
+    persona:'You have mild memory problems: you are pleasant but sometimes vague about names, dates and medication doses, and occasionally say "you\'d have to ask my daughter." You do not remember the confusion after your last surgery except that your daughter told you about it.',
+    exam:{
+      vitals:'BP 148/76 lying, 124/70 standing; HR 68, RR 16, SpO2 95% on room air, Temp 36.4°C, BMI 19 (58 kg)',
+      general:'Thin, frail-appearing, slow gait with a cane; oriented to person and place but not the date; recalls 2 of 5 words',
+      mallampati:'Mallampati class II (dentures removed)',
+      mouthOpening:'3.5 cm',
+      thyromental:'7 cm',
+      neck:'Reduced extension, adequate',
+      dentition:'Full upper and lower dentures',
+      neckCirc:'37 cm',
+      heart:'Regular rate and rhythm, no murmur',
+      jvdEdema:'No JVD, no edema',
+      lungs:'Clear, slightly diminished at the bases'
+    },
+    keyHistory:[
+      {label:'Asked about prior anesthesia (uncovered postoperative confusion)', any:[P.prevAnes], critical:true},
+      {label:'Asked about code status / advance directives / goals of care', any:[/(dnr|do not resuscitate|code status|resuscitat|\bcpr\b|advance directive|living will|polst|molst|your wishes|goals of care|if something (went|goes) wrong|life support|breathing machine|health care proxy|power of attorney)/], critical:true},
+      {label:'Asked about memory or cognition', any:[/(memory|confus|forget|dementia|cognit|thinking|mixed up|alzheim|donepezil|aricept)/]},
+      {label:'Asked about medications', any:[P.meds]},
+      {label:'Asked specifically about sleep aids or sedatives', any:[/(sleep|lorazepam|ativan|benadryl|diphenhydramine|benzo|sedat|nerve pill|anxiety pill)/]},
+      {label:'Asked about alcohol use', any:[P.alcohol]},
+      {label:'Asked about falls or balance', any:[/(fall|fell|balance|dizz|unsteady)/]},
+      {label:'Asked about functional status / living situation / support', any:[P.functional, /(live alone|lives? with|who (helps|lives)|help at home|support|independent|dress|bathe|shopping)/]},
+      {label:'Asked about weight loss or nutrition', any:[/(weight|appetite|eating well|nutrition|lost)/]},
+      {label:'Asked about NPO status', any:[P.npo]}
+    ],
+    keyExamExtra:['general'],
+    asaClass:'ASA III (frailty, cognitive impairment, poor functional capacity)',
+    answer:{ asa:[3], risks:['delirium','goalsOfCare'], okRisks:['cardiac','pulmonary','aspiration'], airway:['reassuring'], disposition:['modify'],
+      why:'Very high delirium risk (prior postoperative delirium, cognitive impairment, nightly benzodiazepine and diphenhydramine, alcohol, age, frailty). Proceed with modifications: discuss and document his DNR status ("required reconsideration"), avoid new benzodiazepines and anticholinergics, prefer regional anesthesia, involve his daughter, and plan delirium prevention.' },
+    redFlag:'A prior episode of postoperative delirium on top of cognitive impairment, chronic benzodiazepine + diphenhydramine use and nightly alcohol, plus a DNR/POLST that must be discussed before surgery rather than assumed or ignored.',
+    teachingPoints:[
+      'DNR orders are not automatically suspended in the OR. ASA and ACS call for "required reconsideration": discuss with the patient and surrogate what applies during anesthesia and surgery, and document it.',
+      'Prior postoperative delirium is one of the strongest predictors of delirium again. Others: cognitive impairment, age, frailty, sensory impairment, alcohol and sedative-hypnotic use.',
+      'Avoid starting benzodiazepines and anticholinergics (e.g., diphenhydramine) in older adults (Beers criteria) — but don\'t abruptly stop a long-term nightly benzodiazepine or daily alcohol either: withdrawal causes delirium too.',
+      'Screen for frailty: falls, unintentional weight loss, slow gait, low activity, poor functional capacity (< 4 METs). Orthostatic hypotension raises the risk of falls after surgery.'
+    ]
+  },
+
+  mensah: {
+    id:'mensah', tab:'ROOM 7 · ELECTIVE', name:'Samuel Mensah', age:50, sex:'male',
+    procedure:'Elective right total hip replacement',
+    summary:'50M with hip arthritis — a surgery where blood loss is expected.',
+    chart:{
+      chiefComplaint:'Here for a right hip replacement for arthritis; pain is keeping him up at night.',
+      pmh:'Osteoarthritis of the right hip. High blood pressure. HIDDEN DETAIL: his pre-op blood test 2 weeks ago showed mild iron-deficiency anemia; he was prescribed iron tablets but stopped after 3 days because they upset his stomach. He mentions this only if asked about anemia, his blood count, iron, or his energy level.',
+      psh:'Knee arthroscopy 8 years ago.',
+      anesthesiaHistory:'Spinal anesthesia for the knee arthroscopy — no problems.',
+      medications:'Amlodipine 10 mg daily. Ibuprofen 600 mg three times a day for hip pain (last dose last night). Iron tablets (stopped).',
+      allergies:'No known drug allergies.',
+      familyHistory:'Nothing relevant; no bleeding disorders.',
+      socialHistory:'Non-smoker, no alcohol. Bus driver. Married with three children.',
+      npoStatus:'Nothing to eat since 8pm last night; water until 5am. Surgery at 9am.',
+      reviewOfSystems:'More tired than usual for a few months and a bit breathless on stairs lately. No black or bloody stools. No chest pain.',
+      functionalCapacity:'Can climb two flights of stairs; limited mainly by hip pain.',
+      beliefs:'HIDDEN DETAIL: he is a Jehovah\'s Witness. He will not accept whole blood, red cells, white cells, platelets or plasma under any circumstances, even if he would die without them. He carries an advance directive card in his wallet. He would accept cell salvage if it stays in a continuous circuit with his body, and he accepts albumin and clotting factor products ("fractions") — but no one has ever asked him in detail. He mentions this only if asked about blood transfusions, religious or personal beliefs affecting his care, or advance directives; otherwise he assumes "the surgeon knows."',
+      concerns:'Wants to be sure his wishes about blood will be respected.'
+    },
+    exam:{
+      vitals:'BP 136/84, HR 92, RR 16, SpO2 98% on room air, Temp 36.8°C, BMI 28. Chart labs from 2 weeks ago: hemoglobin 10.9 g/dL, ferritin 12 ng/mL (low), platelets 250,000',
+      general:'Mild conjunctival pallor; limps on the right',
+      mallampati:'Mallampati class II',
+      mouthOpening:'4 cm',
+      thyromental:'7 cm',
+      neck:'Full range of motion',
+      dentition:'Intact',
+      neckCirc:'39 cm',
+      heart:'Regular, soft systolic flow murmur',
+      jvdEdema:'No JVD, no edema',
+      lungs:'Clear bilaterally'
+    },
+    keyHistory:[
+      {label:'Asked whether he would accept a blood transfusion / beliefs affecting care', any:[/(transfus|blood products?|receive blood|accept blood|blood if|give you blood|red (blood )?cells|jehovah|witness|religio|beliefs|faith)/], critical:true},
+      {label:'Clarified exactly which blood products or techniques he would accept (cell salvage, albumin, factors)', any:[/(cell salvage|cell saver|albumin|fraction|clotting factor|factors|plasma|platelets|which (products|parts)|what (would|will) you accept|anything you would accept|recombinant|erythropoie|\bepo\b)/], critical:true},
+      {label:'Asked about an advance directive / documentation', any:[/(advance directive|\bcard\b|document|living will|proxy|power of attorney|in writing)/]},
+      {label:'Asked about anemia, fatigue or recent blood count', any:[/(anemi|iron|hemoglobin|blood count|\bcbc\b|tired|fatigue|energy|pale)/]},
+      {label:'Asked about bleeding history or NSAID use', any:[P.bleeding, P.nsaid]},
+      {label:'Asked about medications', any:[P.meds]},
+      {label:'Asked about prior anesthesia', any:[P.prevAnes]},
+      {label:'Asked about drug allergies', any:[P.allergy]},
+      {label:'Asked about NPO status', any:[P.npo]}
+    ],
+    keyExamExtra:['general'],
+    asaClass:'ASA II (well-controlled hypertension, mild anemia)',
+    answer:{ asa:[2], risks:['transfusion'], okRisks:['bleeding','cardiac'], airway:['reassuring'], disposition:['delay'],
+      why:'An elective operation with significant expected blood loss, in a patient who refuses transfusion, with untreated iron-deficiency anemia. Delay to optimize hemoglobin (e.g., IV iron), document exactly which products and techniques he accepts, and plan blood-conservation strategies.' },
+    redFlag:'A Jehovah\'s Witness who refuses blood transfusion, with untreated iron-deficiency anemia, going for a high-blood-loss elective operation — and no one has documented which products he would accept.',
+    teachingPoints:[
+      'Ask every patient about blood transfusion before an operation where blood loss is likely; never assume "the surgeon knows."',
+      'Acceptance of blood fractions (albumin, clotting factors) and techniques (cell salvage, hemodilution) is an individual choice for Jehovah\'s Witnesses — ask about each one and document it.',
+      'Patient blood management: find and treat anemia before elective surgery (IV iron works faster than oral), limit blood draws, use tranexamic acid and cell salvage when acceptable, and keep surgical blood loss low.',
+      'An adult with decision-making capacity can refuse transfusion even if it may lead to death; the team\'s job is to respect it and plan around it.'
+    ]
+  },
+
+  reed: {
+    id:'reed', tab:'ROOM 8 · ELECTIVE', name:'Thomas Reed', age:61, sex:'male',
+    procedure:'Elective arthroscopic right rotator cuff repair',
+    summary:'61M with a history of throat cancer — what happened last time he had a breathing tube?',
+    chart:{
+      chiefComplaint:'Here to repair a torn rotator cuff in his right shoulder.',
+      pmh:'Laryngeal (throat) cancer 6 years ago, treated with radiation to the neck; in remission. Low thyroid since the radiation. High blood pressure.',
+      psh:'Hernia repair 3 years ago. Biopsies of the throat 6 years ago.',
+      anesthesiaHistory:'HIDDEN DETAIL: after his hernia repair 3 years ago he woke up with a very sore throat, and the anesthesiologist told him it had been "very hard to get the breathing tube in," that it took several tries and a special scope, and that he should tell any future anesthesia team. He was given a letter about it, which is at home in a drawer. He mentions this only if asked about previous anesthesia experiences or problems.',
+      medications:'Levothyroxine, losartan, aspirin 81 mg daily (took it this morning).',
+      allergies:'No known drug allergies.',
+      familyHistory:'Nothing relevant.',
+      socialHistory:'Quit smoking 6 years ago after a 35 pack-year history. No alcohol since the cancer. Retired electrician.',
+      npoStatus:'Nothing to eat since 9pm; sip of water with pills at 6am. Surgery at 10am.',
+      reviewOfSystems:'Dry mouth since the radiation; sometimes has trouble swallowing dry food; voice has been hoarse since treatment. No noisy breathing. Snores a little. No chest pain.',
+      functionalCapacity:'Walks 2 miles a day; no trouble with stairs.',
+      concerns:'Really does not want to wake up with that sore throat again.'
+    },
+    exam:{
+      vitals:'BP 134/80, HR 70, RR 14, SpO2 97% on room air, Temp 36.6°C, BMI 27',
+      general:'Hoarse voice, no stridor, no distress',
+      mallampati:'Mallampati class IV (only the hard palate is visible)',
+      mouthOpening:'2.5 cm (limited by radiation-related scarring)',
+      thyromental:'5.5 cm',
+      neck:'Firm, "woody" skin over the front of the neck from radiation; markedly reduced extension',
+      dentition:'Several missing teeth; one loose lower molar',
+      neckCirc:'41 cm',
+      heart:'Regular rate and rhythm, no murmur',
+      jvdEdema:'No JVD, no edema',
+      lungs:'Clear bilaterally'
+    },
+    keyHistory:[
+      {label:'Asked about prior anesthesia experiences / problems', any:[P.prevAnes], critical:true},
+      {label:'Followed up on the difficult intubation (details, letter, records)', any:[/(letter|records?|paperwork|what (did|exactly)|told you|breathing tube|intubat|difficult|hard to|scope|awake|how many (tries|attempts))/], critical:true},
+      {label:'Asked about the throat cancer and neck radiation', any:[/(cancer|radiation|radiotherapy|neck|throat|tumou?r|chemo)/]},
+      {label:'Asked about swallowing, voice, or breathing symptoms', any:[/(swallow|voice|hoarse|stridor|noisy breath|choke|choking|snor)/]},
+      {label:'Asked about medications (including aspirin)', any:[P.meds]},
+      {label:'Asked about drug allergies', any:[P.allergy]},
+      {label:'Asked about NPO status', any:[P.npo]},
+      {label:'Asked about smoking history', any:[P.smoking]},
+      {label:'Asked about functional capacity', any:[P.functional]}
+    ],
+    keyExamExtra:[],
+    asaClass:'ASA II–III (treated head and neck cancer with radiation, hypothyroidism, hypertension)',
+    answer:{ asa:[2,3], risks:['difficultAirway'], okRisks:['pulmonary','aspiration','bleeding'], airway:['difficult'], disposition:['modify','delay'],
+      why:'A documented previous difficult intubation plus a very concerning exam (Mallampati IV, limited mouth opening and neck extension, radiation-scarred neck). Proceed only with a difficult-airway plan (e.g., awake fiberoptic intubation, airway cart, ENT backup) — or delay to obtain the prior anesthesia records.' },
+    redFlag:'A previous difficult intubation that the patient will only reveal if asked about past anesthesia, combined with radiation changes to the neck that also make a surgical airway much harder.',
+    teachingPoints:[
+      'A history of difficult intubation is one of the strongest predictors of future difficulty — always ask about previous anesthesia problems and try to get the records or letter.',
+      'Neck radiation causes fibrosis: limited mouth opening and neck movement, and a scarred neck that makes emergency front-of-neck access much harder. Plan awake techniques and ENT backup.',
+      'Regional anesthesia doesn\'t remove the need for an airway plan. An interscalene block for shoulder surgery also commonly paralyzes the diaphragm on that side.',
+      'Use the ASA Difficult Airway Algorithm: when difficult intubation is predicted, consider awake intubation and have a backup plan before induction.'
+    ]
   }
 };
+
+// Physical exam maneuvers the student can perform, grouped for the exam panel
+const EXAM_GROUPS = [
+  {title:'Vitals & general', items:[['vitals','Review vital signs (and chart labs)'], ['general','General appearance']]},
+  {title:'Airway', items:[['mallampati','Mallampati class'], ['mouthOpening','Mouth opening'], ['thyromental','Thyromental distance'], ['neck','Neck range of motion'], ['dentition','Dentition'], ['neckCirc','Neck circumference']]},
+  {title:'Cardiac', items:[['heart','Auscultate heart'], ['jvdEdema','JVD & peripheral edema']]},
+  {title:'Pulmonary', items:[['lungs','Auscultate lungs']]}
+];
+const BASE_KEY_EXAM = ['vitals','mallampati','mouthOpening','thyromental','neck','dentition','heart','lungs'];
+
+// Risk options on the Assessment & Plan screen
+const RISK_OPTIONS = [
+  ['difficultAirway','Predicted or known difficult airway'],
+  ['aspiration','Aspiration risk (reflux, full stomach, fasting violation, slow gastric emptying, pregnancy)'],
+  ['cardiac','Cardiac risk (ischemia, arrhythmia, heart failure)'],
+  ['pulmonary','Pulmonary / reactive airway risk (asthma, recent URI, smoking)'],
+  ['osa','Obstructive sleep apnea / sleep-disordered breathing'],
+  ['mh','Possible malignant hyperthermia susceptibility'],
+  ['bleeding','Bleeding risk (anticoagulant, antiplatelet, coagulopathy)'],
+  ['glycemic','Glucose management (hypo- or hyperglycemia)'],
+  ['hypertensiveDisorder','Hypertensive disorder of pregnancy (preeclampsia)'],
+  ['delirium','Postoperative delirium / cognitive impairment / frailty'],
+  ['transfusion','Refuses blood transfusion and/or significant anemia'],
+  ['goalsOfCare','Code status / goals-of-care discussion needed'],
+  ['drugAllergy','Significant drug allergy']
+];
+const DISPOSITION_OPTIONS = [
+  ['proceed','Proceed as planned'],
+  ['modify','Proceed, with specific changes to the plan or precautions'],
+  ['delay','Delay / postpone for workup or optimization']
+];
+const AIRWAY_OPTIONS = [
+  ['reassuring','Reassuring — routine airway plan'],
+  ['difficult','Concerning — prepare a difficult-airway plan']
+];
 
 /* ============================= INSTRUCTOR CONFIG =============================
    Set this once after deploying the Cloudflare Worker proxy (see
@@ -435,6 +983,33 @@ function saveKey(storageKey, value){
   }catch(e){ /* private browsing or storage blocked — key just won't persist */ }
 }
 
+
+/* ============================= SAVED SESSION (this device/browser only) =============================
+   Phones often reload a tab after the student switches apps; saving the encounter
+   as it goes means they pick up where they left off instead of losing the interview. */
+const SESSION_KEY = 'preop_session_v2';
+function emptyAssessment(){ return {asa:'', emergency:false, risks:[], airway:'', disposition:'', plan:''}; }
+function loadSession(){
+  try{
+    const raw = localStorage.getItem(SESSION_KEY);
+    if(!raw) return null;
+    const s = JSON.parse(raw);
+    if(!s || !CASES[s.caseId]) return null;
+    return s;
+  }catch(e){ return null; }
+}
+function persistSession(){
+  try{
+    if(!state.caseId || state.screen==='select' || state.screen==='learn'){ localStorage.removeItem(SESSION_KEY); return; }
+    localStorage.setItem(SESSION_KEY, JSON.stringify({
+      screen: state.screen==='grading' ? 'assess' : state.screen,
+      caseId: state.caseId, introduced: state.introduced, messages: state.messages,
+      examOpen: state.examOpen, examDone: Array.from(state.examDone), draft: state.draft,
+      assessment: state.assessment, report: state.report, startedAt: state.startedAt
+    }));
+  }catch(e){ /* storage blocked — the session just won't survive a reload */ }
+}
+
 /* ============================= STATE ============================= */
 let state = {
   screen:'select',
@@ -443,6 +1018,8 @@ let state = {
   messages:[],       // {role:'user'|'assistant', text}
   examOpen:{},        // itemKey -> bool open
   examDone:new Set(),
+  draft:'',           // unsent text in the interview box, kept across re-renders
+  assessment:emptyAssessment(),
   voiceOn:true,
   voiceSettingsOpen:false,
   classPasscode: loadSavedKey('preop_class_passcode'),
@@ -456,6 +1033,25 @@ let state = {
   error:null,
   startedAt:null
 };
+(function restoreSession(){
+  const s = loadSession();
+  if(!s) return;
+  Object.assign(state, {
+    screen: ['interview','assess','report'].includes(s.screen) ? s.screen : 'interview',
+    caseId: s.caseId, introduced: !!s.introduced, messages: Array.isArray(s.messages) ? s.messages : [],
+    examOpen: s.examOpen || {}, examDone: new Set(s.examDone || []), draft: s.draft || '',
+    assessment: Object.assign(emptyAssessment(), s.assessment || {}), report: s.report || null, startedAt: s.startedAt || Date.now()
+  });
+  if(state.screen==='report' && !state.report) state.screen='assess';
+})();
+
+function isTouchDevice(){
+  try{ return window.matchMedia('(pointer: coarse)').matches; }catch(e){ return false; }
+}
+function speakerOf(c){ return c.speaker || {name:c.name, sex:c.sex}; }
+function speakerFirst(c){ return speakerOf(c).name.split(' ')[0]; }
+function speakerSex(c){ return speakerOf(c).sex; }
+function ageSex(c){ return `${c.age}${c.sex==='female'?'F':'M'}`; }
 
 let recognition=null;
 try{
@@ -528,128 +1124,245 @@ async function callClaude(system, messages, maxTokens){
   return textBlock ? textBlock.text : '';
 }
 
+function chartText(c){
+  const ch = c.chart;
+  const lines = [
+    ['CHIEF COMPLAINT', ch.chiefComplaint], ['PAST MEDICAL HISTORY', ch.pmh], ['PAST SURGICAL HISTORY', ch.psh],
+    ['ANESTHESIA HISTORY', ch.anesthesiaHistory], ['MEDICATIONS', ch.medications], ['ALLERGIES', ch.allergies],
+    ['FAMILY HISTORY', ch.familyHistory], ['SOCIAL HISTORY', ch.socialHistory], ['NPO / LAST ORAL INTAKE', ch.npoStatus],
+    ['REVIEW OF SYSTEMS', ch.reviewOfSystems], ['FUNCTIONAL CAPACITY / EXERCISE TOLERANCE', ch.functionalCapacity],
+    ['PREGNANCY STATUS', ch.pregnancy], ['CODE STATUS / ADVANCE DIRECTIVES', ch.codeStatus],
+    ['BELIEFS AFFECTING CARE', ch.beliefs], ['CONCERNS / QUESTIONS FOR THE TEAM', ch.concerns]
+  ];
+  return lines.filter(([,v])=>v).map(([k,v])=>`${k}: ${v}`).join('\n');
+}
+
+function whoYouAre(c){
+  if(c.speaker){
+    return `You are role-playing as ${c.speaker.name}, the ${c.speaker.relation} of ${c.name}, a ${c.age}-year-old ${c.sex==='female'?'girl':'boy'} who is about to have the following procedure: ${c.procedure}. You are answering the interview on your child's behalf.`;
+  }
+  return `You are role-playing as a patient named ${c.name}, a ${c.age}-year-old ${c.sex}, who is about to have the following procedure: ${c.procedure}.`;
+}
+
 function patientSystemPrompt(c){
-  return `You are role-playing as a patient named ${c.name}, a ${c.age}-year-old ${c.sex}, who is about to have the following procedure: ${c.procedure}. A fourth-year medical student is interviewing you as part of a pre-operative history and physical exam. This is a training simulation.
+  return `${whoYouAre(c)} A fourth-year medical student is interviewing you as part of a pre-operative history and physical exam. This is a training simulation.
 
-Your complete, ground-truth medical chart (the student cannot see this, only you know it) is below. Stay completely consistent with it for the entire conversation.
+Your complete, ground-truth medical chart (the student cannot see this, only you know it) is below. Stay completely consistent with it for the entire conversation. Items marked HIDDEN DETAIL are only revealed when the student asks the kind of question described.
 
-CHIEF COMPLAINT: ${c.chart.chiefComplaint}
-PAST MEDICAL HISTORY: ${c.chart.pmh}
-PAST SURGICAL HISTORY: ${c.chart.psh}
-ANESTHESIA HISTORY: ${c.chart.anesthesiaHistory}
-MEDICATIONS: ${c.chart.medications}
-ALLERGIES: ${c.chart.allergies}
-FAMILY HISTORY: ${c.chart.familyHistory}
-SOCIAL HISTORY: ${c.chart.socialHistory}
-NPO / LAST ORAL INTAKE: ${c.chart.npoStatus}
-REVIEW OF SYSTEMS: ${c.chart.reviewOfSystems}
+${chartText(c)}
 
 RULES FOR HOW YOU RESPOND:
-- Speak in first person, as the patient, in plain lay language (not medical jargon back at them).
+- Speak in first person, in plain lay language (not medical jargon back at them).
 - Answer ONLY what is asked. Do not volunteer your entire history unprompted. If asked a broad open-ended question like "tell me about your medical history," give a reasonably brief, natural summary, not an exhaustive recitation.
 - If asked about something not in your chart, say you don't have that problem / it's never come up, consistent with the chart.
 - Show a believable, mild human personality and appropriate emotion (e.g., some anxiety about surgery, mild annoyance if asked the same thing repeatedly, warmth if the student is reassuring) but do not overact.
-- Keep responses fairly short and conversational — 1 to 4 sentences typically, like a real patient talking, not a chart dump.
+- Keep responses fairly short and conversational — 1 to 4 sentences typically, like a real person talking, not a chart dump.
+- Reply with spoken words only — no stage directions, asterisks, or descriptions of actions (your reply may be read aloud).
 - Never break character, never mention that you are an AI, never mention "the chart" or "the case."
-- If the student asks something ambiguous or unclear, respond the way a real patient would (asking for clarification, or giving a slightly imprecise answer) rather than being a perfect medical informant.`;
+- If the student asks something ambiguous or unclear, respond the way a real person would (asking for clarification, or giving a slightly imprecise answer) rather than being a perfect medical informant.${c.persona ? '\n- '+c.persona : ''}`;
 }
 
-function gradingSystemPrompt(c, examDoneList){
-  return `You are an attending anesthesiologist grading a fourth-year medical student's pre-operative history and physical exam performance in a simulated patient encounter. Be a fair but rigorous evaluator — this is formative feedback for a learner, not a real clinical record.
+/* ============================= AUTOMATED SCORING =============================
+   Scores are computed here (not by the AI) so every student is graded the same
+   way for the same performance. The AI only writes the narrative feedback. */
+function studentText(){
+  return state.messages.filter(m=>m.role==='user').map(m=>m.text.toLowerCase()).join('\n');
+}
+function itemHit(item, text){
+  return item.any.some(alt => Array.isArray(alt) ? alt.every(r=>r.test(text)) : alt.test(text));
+}
+function keyExamFor(c){ return BASE_KEY_EXAM.concat(c.keyExamExtra||[]); }
+function examLabel(key){
+  for(const g of EXAM_GROUPS){ for(const [k,label] of g.items){ if(k===key) return label; } }
+  return key;
+}
+function optionLabel(list, key){ const f = list.find(([k])=>k===key); return f ? f[1] : key; }
+const ASA_NAMES = {1:'ASA I',2:'ASA II',3:'ASA III',4:'ASA IV',5:'ASA V'};
+
+function evaluateEncounter(c){
+  const text = studentText();
+  const history = c.keyHistory.map(item=>({label:item.label, critical:!!item.critical, hit:itemHit(item, text)}));
+  const histHits = history.filter(h=>h.hit).length;
+
+  const keyExam = keyExamFor(c);
+  const exam = keyExam.map(k=>({key:k, label:examLabel(k), hit:state.examDone.has(k)}));
+  const examHits = exam.filter(e=>e.hit).length;
+
+  const a = state.assessment;
+  const asaNum = Number(a.asa);
+  const asaOk = c.answer.asa.includes(asaNum);
+  const chosen = a.risks || [];
+  const riskHits = c.answer.risks.filter(r=>chosen.includes(r));
+  const riskMissed = c.answer.risks.filter(r=>!chosen.includes(r));
+  const riskExtra = chosen.filter(r=>!c.answer.risks.includes(r) && !(c.answer.okRisks||[]).includes(r));
+  const airwayOk = c.answer.airway.includes(a.airway);
+  const dispOk = c.answer.disposition.includes(a.disposition);
+  const riskScore = Math.max(0, Math.round(9*riskHits.length/c.answer.risks.length) - riskExtra.length);
+
+  const comm = [
+    {label:'Introduced yourself by name and stated your role', hit:state.introduced},
+    {label:'Used open-ended questions (e.g., "Tell me about…")', hit:P.openEnded.test(text)},
+    {label:'Invited the patient\'s questions or concerns', hit:P.concerns.test(text)}
+  ];
+
+  const domains = {
+    history:{score:Math.round(40*histHits/history.length), max:40,
+      auto:`Covered ${histHits} of ${history.length} key history items.`},
+    physicalExam:{score:Math.round(20*examHits/exam.length), max:20,
+      auto:`Performed ${examHits} of ${exam.length} key exam maneuvers.`},
+    clinicalReasoning:{score:(asaOk?6:0)+riskScore+(airwayOk?4:0)+(dispOk?6:0), max:25,
+      auto:`ASA ${asaOk?'matches':'differs from'} the expected class; identified ${riskHits.length} of ${c.answer.risks.length} key risks${riskExtra.length?` (plus ${riskExtra.length} not supported by this case)`:''}; airway impression ${airwayOk?'appropriate':'not the expected one'}; disposition ${dispOk?'appropriate':'not the expected one'}.`},
+    communication:{score:comm.filter(x=>x.hit).length*5, max:15,
+      auto:`${comm.filter(x=>x.hit).length} of 3 communication behaviors observed.`}
+  };
+  const overall = Object.values(domains).reduce((s,d)=>s+d.score,0);
+  return {overall, domains, history, exam, comm,
+    plan:{asaChosen:asaNum, emergency:!!a.emergency, asaOk, riskHits, riskMissed, riskExtra, airwayChosen:a.airway, airwayOk, dispChosen:a.disposition, dispOk, planText:a.plan||''}};
+}
+
+function gradingSystemPrompt(c, ev){
+  const a = state.assessment;
+  return `You are an attending anesthesiologist giving written feedback on a fourth-year medical student's pre-operative history and physical in a simulated encounter. Be a fair but rigorous, encouraging teacher — this is formative feedback, not a real clinical record. The numeric scores have already been calculated automatically; do NOT produce scores.
 
 GROUND TRUTH CASE (the student did not see this):
-Patient: ${c.name}, ${c.age}${c.sex==='female'?'F':'M'}, procedure: ${c.procedure}
-PMH: ${c.chart.pmh}
-PSH: ${c.chart.psh}
-Anesthesia history: ${c.chart.anesthesiaHistory}
-Medications: ${c.chart.medications}
-Allergies: ${c.chart.allergies}
-Family history: ${c.chart.familyHistory}
-Social history: ${c.chart.socialHistory}
-NPO status: ${c.chart.npoStatus}
-Review of systems: ${c.chart.reviewOfSystems}
-Exam findings available: ${JSON.stringify(c.chart.exam)}
-Correct ASA classification: ${c.asaClass}
+Patient: ${c.name}, ${ageSex(c)}, procedure: ${c.procedure}${c.speaker ? `\n(The student interviewed the ${c.speaker.relation}, ${c.speaker.name}.)` : ''}
+${chartText(c)}
+Exam findings available: ${JSON.stringify(c.exam)}
+Expected ASA classification: ${c.asaClass}
 The critical teaching point / red flag for this case: ${c.redFlag}
+Expected assessment & plan: ${c.answer.why}
 
-KEY HISTORY ITEMS A STRONG STUDENT SHOULD HAVE ELICITED:
-${c.keyHistoryItems.map(x=>'- '+x).join('\n')}
+AUTOMATED CHECKLIST (keyword-based, so it can miss unusual phrasing — if the transcript shows the student DID cover an item marked missed, say so):
+${ev.history.map(h=>`- [${h.hit?'covered':'missed'}] ${h.label}`).join('\n')}
 
-PHYSICAL EXAM ITEMS THE STUDENT ACTUALLY REVIEWED IN-APP: ${examDoneList.length ? examDoneList.join(', ') : 'none'}
-(Available exam items were: airway, heart, lungs, vitals)
+EXAM MANEUVERS THE STUDENT PERFORMED: ${state.examDone.size ? Array.from(state.examDone).map(examLabel).join(', ') : 'none'}
+
+STUDENT'S ASSESSMENT & PLAN:
+ASA: ${ASA_NAMES[Number(a.asa)]||'not given'}${a.emergency?'E':''}
+Risks identified: ${(a.risks||[]).map(r=>optionLabel(RISK_OPTIONS,r)).join('; ') || 'none'}
+Airway impression: ${optionLabel(AIRWAY_OPTIONS, a.airway) || 'not given'}
+Disposition: ${optionLabel(DISPOSITION_OPTIONS, a.disposition) || 'not given'}
+Plan and reasoning (free text): ${a.plan ? a.plan : '(none written)'}
 
 Respond with ONLY valid JSON, no markdown fences, no preamble, matching exactly this shape:
 {
-  "overallScore": <integer 0-100>,
-  "domains": {
-    "history": {"score": <0-40>, "max":40, "feedback":"<1-2 sentence feedback>"},
-    "physicalExam": {"score": <0-20>, "max":20, "feedback":"<1-2 sentence feedback>"},
-    "clinicalReasoning": {"score": <0-25>, "max":25, "feedback":"<1-2 sentence feedback on whether they identified the case's key red flag / risk factors and reasonable ASA class>"},
-    "communication": {"score": <0-15>, "max":15, "feedback":"<1-2 sentence feedback on rapport, clarity, quality of their opening introduction (name + stated role), and appropriate follow-up questions>"}
-  },
+  "history": "<1-2 sentence feedback on their history taking>",
+  "physicalExam": "<1-2 sentence feedback on their exam>",
+  "clinicalReasoning": "<1-2 sentence feedback on whether they identified the red flag, risks and a reasonable ASA class>",
+  "communication": "<1-2 sentence feedback on rapport, clarity, their introduction, and follow-up questions>",
+  "planFeedback": "<2-3 sentences on their written plan — what was sound, what was missing or unsafe>",
   "missedCritical": ["<specific important item they failed to ask or check, be concrete>", "..."],
-  "strengths": ["<specific thing they did well, be concrete, reference something they actually asked>", "..."],
-  "teachingPoints": ${JSON.stringify(c.teachingPoints)}
+  "strengths": ["<specific thing they did well, referencing something they actually asked or wrote>", "..."]
 }
-Base missedCritical and strengths on the ACTUAL transcript provided in the next message, citing specifics. If they did not ask about something on the key items list, it belongs in missedCritical. Keep each array to at most 4 concise items.`;
+Base missedCritical and strengths on the ACTUAL transcript provided in the next message, citing specifics. Keep each array to at most 4 concise items.`;
 }
 
 /* ============================= RENDER ============================= */
 const app = document.getElementById('app');
+const srLive = document.getElementById('sr-live');
+let lastRenderedScreen = null;
+
+function announce(msg){
+  // Screen readers read this region aloud when its text changes
+  if(!srLive) return;
+  srLive.textContent = '';
+  setTimeout(()=>{ srLive.textContent = msg; }, 50);
+}
 
 function render(){
-  if(state.screen==='select') return renderSelect();
-  if(state.screen==='learn') return renderLearn();
-  if(state.screen==='interview') return renderInterview();
-  if(state.screen==='grading') return renderGrading();
-  if(state.screen==='report') return renderReport();
+  const active = document.activeElement;
+  const inputHadFocus = !!(active && active.id==='textInput');
+  const examListEl = app.querySelector('.exam-list');
+  const examScroll = examListEl ? examListEl.scrollTop : 0;
+  const screenChanged = state.screen !== lastRenderedScreen;
+  const firstRender = lastRenderedScreen === null;
+  lastRenderedScreen = state.screen;
+
+  if(state.screen==='learn') renderLearn();
+  else if(state.screen==='interview') renderInterview();
+  else if(state.screen==='assess') renderAssess();
+  else if(state.screen==='grading') renderGrading();
+  else if(state.screen==='report') renderReport();
+  else renderSelect();
+
+  persistSession();
+
+  const newExamList = app.querySelector('.exam-list');
+  if(newExamList && !screenChanged) newExamList.scrollTop = examScroll;
+
+  if(screenChanged && !firstRender){
+    window.scrollTo(0,0);
+    if(state.screen==='interview' && !isTouchDevice()){
+      focusTextInput();
+    }else{
+      // Move focus to the new screen's heading so screen-reader users hear where they are
+      const h = app.querySelector('[data-screen-heading]');
+      if(h) h.focus({preventScroll:true});
+    }
+  }else if(inputHadFocus){
+    // Keep typing focus without popping the keyboard open on every re-render
+    focusTextInput();
+  }
+}
+
+function focusTextInput(){
+  const el = document.getElementById('textInput');
+  if(!el) return;
+  el.focus({preventScroll:true});
+  const n = el.value.length;
+  try{ el.setSelectionRange(n,n); }catch(e){}
+}
+
+function disclaimerHtml(){
+  return `<div class="disclaimer">Educational simulation for medical students. All patients are fictional and the AI patient can make mistakes. This is not medical advice and is not for clinical decision-making — always follow your attending and your institution's policies. Do not enter real patient information.</div>`;
 }
 
 function renderSelect(){
   app.innerHTML = `
     <div class="masthead">
       <div>
-        <h1>Pre-Op Assessment Trainer</h1>
+        <h1 tabindex="-1" data-screen-heading>Pre-Op Assessment Trainer</h1>
         <div class="tag">Practice taking a pre-operative history &amp; physical before you're doing it for real</div>
       </div>
-      <div class="brand-mark">ANESTHESIA<br>ELECTIVE · 4TH YEAR</div>
+      <div class="brand-mark" aria-hidden="true">ANESTHESIA<br>ELECTIVE · 4TH YEAR</div>
     </div>
     <div class="setup-card ${state.classPasscode ? 'ready' : ''}">
       <h3>${state.classPasscode ? '✓ Connected' : 'Enter your class passcode'}</h3>
-      <div class="setup-hint">
+      <div class="setup-hint" id="passcodeHint">
         ${state.classPasscode
           ? "You can update it below at any time if your instructor changes it."
           : "The patient and grading are powered by Claude. Enter the passcode your instructor gave you — it's saved on this device so you won't need to re-enter it next time. This isn't a personal account or API key; it's a shared class passcode, and everyone in the class uses the same one."}
       </div>
       <div class="setup-row">
-        <input type="password" id="classPasscodeInput" placeholder="Class passcode" value="${state.classPasscode}">
+        <input type="password" id="classPasscodeInput" placeholder="Class passcode" aria-label="Class passcode" aria-describedby="passcodeHint" autocomplete="off" value="${escapeAttr(state.classPasscode)}">
         <button class="save-key-btn" id="saveKeyBtn">${state.classPasscode ? 'Update' : 'Save'}</button>
       </div>
     </div>
     <div class="primer-callout">
       <div>
         <div class="eyebrow">Start here</div>
-        <h3 style="font-size:17px; margin-top:3px;">Pre-Op History &amp; Physical: What to Look For</h3>
+        <h2 style="font-size:17px; margin-top:3px;">Pre-Op History &amp; Physical: What to Look For</h2>
         <div class="muted" style="font-size:13.5px; margin-top:3px;">A short primer on why the history and exam matter, and what experienced anesthesiologists check — read this before your first interview.</div>
       </div>
       <button class="begin-btn" id="learnBtn">Read the primer</button>
     </div>
     <div class="intro">
-      <p>Then pick a patient below. You'll interview them by voice or by typing — ask about their history the way you would on the wards. Then walk through the physical exam panel, and submit for a graded report when you're done.</p>
+      <p>Then pick a patient below. You'll interview them by voice or by typing — ask about their history the way you would on the wards. Then perform the physical exam maneuvers you think matter, write your own assessment and plan, and submit for a graded report.</p>
     </div>
-    <div class="chart-rack">
+    <div class="chart-rack" role="list">
       ${Object.values(CASES).map(c=>`
-        <div class="chart-card">
+        <div class="chart-card" role="listitem">
           <div>
             <div class="tab">${c.tab}</div>
-            <h3>${c.name}, ${c.age}${c.sex==='female'?'F':'M'}</h3>
+            <h3>${c.name}, ${ageSex(c)}</h3>
             <div class="meta">${c.summary}</div>
-            <div class="proc">→ ${c.procedure}</div>
+            <div class="proc"><span aria-hidden="true">→ </span>${c.procedure}</div>
           </div>
-          <button class="begin-btn" data-case="${c.id}">Begin interview</button>
+          <button class="begin-btn" data-case="${c.id}" aria-label="Begin interview with ${escapeAttr(c.name)}">Begin interview</button>
         </div>
       `).join('')}
     </div>
+    ${disclaimerHtml()}
   `;
   document.getElementById('learnBtn').addEventListener('click', ()=>{ state.screen='learn'; render(); });
   app.querySelectorAll('.begin-btn[data-case]').forEach(btn=>{
@@ -676,6 +1389,9 @@ function startCase(id){
   state.messages=[];
   state.examOpen={};
   state.examDone=new Set();
+  state.draft='';
+  state.assessment=emptyAssessment();
+  state.report=null;
   state.error=null;
   state.micStatus=null;
   state.startedAt=Date.now();
@@ -683,14 +1399,20 @@ function startCase(id){
   render();
 }
 
+function leaveCase(){
+  stopSpeaking();
+  state.screen='select'; state.caseId=null; state.report=null; state.messages=[]; state.error=null;
+  render();
+}
+
 function renderLearn(){
   app.innerHTML = `
     <div class="masthead">
       <div>
-        <h1>The Pre-Op History &amp; Physical</h1>
+        <h1 tabindex="-1" data-screen-heading>The Pre-Op History &amp; Physical</h1>
         <div class="brief-sub">Why each half matters, and what to specifically look for</div>
       </div>
-      <div class="brand-mark">ANESTHESIA<br>ELECTIVE · 4TH YEAR</div>
+      <div class="brand-mark" aria-hidden="true">ANESTHESIA<br>ELECTIVE · 4TH YEAR</div>
     </div>
 
     <div class="brief-intro">
@@ -698,11 +1420,11 @@ function renderLearn(){
     </div>
 
     <div class="eyebrow" style="margin-bottom:6px;">Part 1</div>
-    <h3 style="font-size:19px; margin-bottom:10px;">The History</h3>
+    <h2 style="font-size:19px; margin-bottom:10px;">The History</h2>
     <div class="brief-grid">
       <div class="brief-card">
-        <div class="bicon">📋</div>
-        <h4>Medical &amp; Surgical History</h4>
+        <div class="bicon" aria-hidden="true">📋</div>
+        <h3 class="h4">Medical &amp; Surgical History</h3>
         <div class="why">Why: establishes the comorbidities and prior procedures that shape today's anesthetic plan.</div>
         <ul>
           <li>Chronic conditions (cardiac, pulmonary, renal, diabetes, etc.) and how well-controlled they are</li>
@@ -711,74 +1433,108 @@ function renderLearn(){
         </ul>
       </div>
       <div class="brief-card">
-        <div class="bicon">💉</div>
-        <h4>Anesthesia History</h4>
+        <div class="bicon" aria-hidden="true">💉</div>
+        <h3 class="h4">Anesthesia History</h3>
         <div class="why">Why: a personal or family history is often the single best predictor of problems today — and often never makes it into the chart otherwise.</div>
         <ul>
-          <li>Has the patient had anesthesia before, and how did it go? (nausea, awareness, difficult intubation, prolonged recovery)</li>
+          <li>Has the patient had anesthesia before, and how did it go? (nausea, awareness, difficult intubation, confusion afterward, prolonged recovery)</li>
           <li>Any personal or family history of a "bad reaction" — always ask what kind and what happened, don't accept a vague answer</li>
           <li>Family history suggestive of malignant hyperthermia: fever, muscle rigidity, or death during a relative's surgery</li>
         </ul>
       </div>
       <div class="brief-card">
-        <div class="bicon">💊</div>
-        <h4>Medications &amp; Allergies</h4>
+        <div class="bicon" aria-hidden="true">💊</div>
+        <h3 class="h4">Medications &amp; Allergies</h3>
         <div class="why">Why: determines what to hold, what to continue, and what could interact with your anesthetic drugs.</div>
         <ul>
-          <li>Full medication list, including OTC drugs and supplements</li>
-          <li>Anticoagulants/antiplatelets — which ones, and when the last dose was (bleeding vs. thrombosis risk)</li>
-          <li>Drug allergies, and exactly what the reaction was — a rash is very different from anaphylaxis</li>
+          <li>Full medication list, including injections, OTC drugs and supplements — and <strong>when each was last taken</strong></li>
+          <li>Anticoagulants/antiplatelets — which ones, and the exact date and time of the last dose (bleeding vs. thrombosis risk, timing for spinals/epidurals)</li>
+          <li>Diabetes medications: insulin doses the night before; GLP-1 agonists (e.g., semaglutide) slow stomach emptying; SGLT2 inhibitors are usually held 3–4 days before surgery. Follow your institution's policy.</li>
+          <li>Drug allergies, and exactly what the reaction was — a rash is very different from anaphylaxis, and nausea is an intolerance, not an allergy</li>
         </ul>
       </div>
       <div class="brief-card">
-        <div class="bicon">🚬</div>
-        <h4>Social History</h4>
+        <div class="bicon" aria-hidden="true">🚬</div>
+        <h3 class="h4">Social History</h3>
         <div class="why">Why: smoking, alcohol, and drug use directly affect airway reactivity, withdrawal risk, and drug dosing.</div>
         <ul>
-          <li>Smoking status and pack-year history (reactive airway, wound healing)</li>
+          <li>Smoking status and pack-year history (reactive airway, wound healing); secondhand smoke in children</li>
           <li>Alcohol use — quantity and frequency (withdrawal risk, anesthetic requirement)</li>
           <li>Recreational drug use, which can affect airway management and drug interactions</li>
+          <li>Living situation and support at home, especially in older patients</li>
         </ul>
       </div>
       <div class="brief-card">
-        <div class="bicon">⏱️</div>
-        <h4>NPO Status</h4>
+        <div class="bicon" aria-hidden="true">⏱️</div>
+        <h3 class="h4">NPO Status</h3>
         <div class="why">Why: confirms aspiration risk — one of the most preventable causes of perioperative harm.</div>
         <ul>
-          <li>Time and content of last oral intake (solids vs. clear liquids have different fasting windows)</li>
-          <li>Any reason standard fasting guidelines might not apply (trauma, an emergent case, reflux)</li>
+          <li>Time and content of last oral intake. ASA fasting guidance for healthy patients: clear liquids 2 h, breast milk 4 h, infant formula / nonhuman milk / light meal 6 h, fried or fatty food 8 h</li>
+          <li>Ask about <em>anything</em> — snacks, gum, sips, food in the car (especially with children)</li>
+          <li>Reasons fasting may not protect the patient: trauma, emergency, reflux, pregnancy, diabetic gastroparesis, GLP-1 agonists</li>
         </ul>
       </div>
       <div class="brief-card">
-        <div class="bicon">🩺</div>
-        <h4>Review of Systems</h4>
+        <div class="bicon" aria-hidden="true">🩺</div>
+        <h3 class="h4">Review of Systems</h3>
         <div class="why">Why: a focused ROS surfaces symptoms the patient didn't think to mention as "medical history."</div>
         <ul>
           <li>Cardiac: chest pain, exertional symptoms, palpitations, orthopnea</li>
-          <li>Pulmonary: shortness of breath, wheeze, snoring or witnessed apneas</li>
+          <li>Pulmonary: shortness of breath, wheeze, recent cold or cough, snoring or witnessed apneas</li>
           <li>Any recent fevers, infections, or new/unexplained symptoms</li>
+          <li>In pregnancy: headache, vision changes, swelling, right upper abdominal pain (preeclampsia)</li>
+        </ul>
+      </div>
+      <div class="brief-card">
+        <div class="bicon" aria-hidden="true">🏃</div>
+        <h3 class="h4">Functional Capacity</h3>
+        <div class="why">Why: how much a patient can do is one of the best quick measures of cardiopulmonary reserve.</div>
+        <ul>
+          <li>Ask what they can do: climb one or two flights of stairs, walk up a hill, do housework, without stopping</li>
+          <li>Being able to do about 4 METs (roughly a flight of stairs) is reassuring; less than 4 METs plus cardiac risk factors may need further evaluation</li>
+          <li>In older adults, also ask about falls, weight loss and help with daily activities (frailty)</li>
+        </ul>
+      </div>
+      <div class="brief-card">
+        <div class="bicon" aria-hidden="true">🤰</div>
+        <h3 class="h4">Pregnancy Status</h3>
+        <div class="why">Why: pregnancy changes drug choices, airway risk and whether elective surgery should go ahead.</div>
+        <ul>
+          <li>Ask anyone who could be pregnant about their last period and the possibility of pregnancy</li>
+          <li>Many centers require a pregnancy test before surgery — know your institution's policy</li>
+        </ul>
+      </div>
+      <div class="brief-card">
+        <div class="bicon" aria-hidden="true">🗣️</div>
+        <h3 class="h4">Wishes, Consent &amp; Questions</h3>
+        <div class="why">Why: the plan has to fit the patient's values — and patients rarely raise these unless asked.</div>
+        <ul>
+          <li>Code status and advance directives (a DNR order needs to be discussed before surgery, not assumed)</li>
+          <li>Blood transfusion: would they accept it, and which products?</li>
+          <li>Their worries and questions — and close by asking "What questions do you have?"</li>
         </ul>
       </div>
     </div>
 
     <div class="eyebrow" style="margin-bottom:6px;">Part 2</div>
-    <h3 style="font-size:19px; margin-bottom:10px;">The Physical Exam</h3>
+    <h2 style="font-size:19px; margin-bottom:10px;">The Physical Exam</h2>
     <div class="brief-grid">
       <div class="brief-card">
-        <div class="bicon">🫁</div>
-        <h4>Airway Exam</h4>
+        <div class="bicon" aria-hidden="true">🫁</div>
+        <h3 class="h4">Airway Exam</h3>
         <div class="why">Why: predicts difficult mask ventilation or intubation before it becomes an emergency in the OR.</div>
         <ul>
           <li><strong>Mallampati class</strong> (I–IV) — how much of the oropharynx you can see with mouth open, tongue out</li>
           <li><strong>Mouth opening</strong> — reassuring if &gt;3cm / about two fingerbreadths</li>
           <li><strong>Thyromental distance</strong> — &gt;6.5cm is normal; shorter suggests a harder laryngoscopy</li>
-          <li><strong>Neck mobility</strong> — full flexion/extension vs. limited (e.g. arthritis)</li>
+          <li><strong>Neck mobility</strong> — full flexion/extension vs. limited (e.g. arthritis, prior radiation)</li>
           <li><strong>Dentition</strong> — loose teeth, dentures, prominent incisors (aspiration/damage risk)</li>
+          <li><strong>Neck circumference</strong> — &gt;40 cm is a STOP-BANG criterion</li>
         </ul>
       </div>
       <div class="brief-card">
-        <div class="bicon">❤️</div>
-        <h4>Cardiac Exam</h4>
+        <div class="bicon" aria-hidden="true">❤️</div>
+        <h3 class="h4">Cardiac Exam</h3>
         <div class="why">Why: undiagnosed or uncontrolled cardiac disease is one of the biggest drivers of perioperative risk.</div>
         <ul>
           <li><strong>Rate &amp; rhythm</strong> — an irregular rhythm may signal an undiagnosed arrhythmia</li>
@@ -787,29 +1543,29 @@ function renderLearn(){
         </ul>
       </div>
       <div class="brief-card">
-        <div class="bicon">🌬️</div>
-        <h4>Pulmonary Exam</h4>
+        <div class="bicon" aria-hidden="true">🌬️</div>
+        <h3 class="h4">Pulmonary Exam</h3>
         <div class="why">Why: baseline lung findings help you anticipate ventilation difficulty and post-op respiratory complications.</div>
         <ul>
           <li><strong>Breath sounds</strong> bilaterally — wheezes suggest reactive airway/bronchospasm risk, crackles suggest fluid or infection</li>
           <li><strong>Respiratory rate &amp; effort</strong> — labored breathing changes your plan</li>
-          <li><strong>OSA signs</strong> — obesity, large neck circumference, reported snoring/witnessed apneas</li>
+          <li><strong>OSA screening (STOP-BANG)</strong>: Snoring, Tired in the daytime, Observed apneas, high blood Pressure, BMI &gt;35, Age &gt;50, Neck &gt;40 cm, male Gender. 0–2 low risk, 3–4 intermediate, 5–8 high</li>
         </ul>
       </div>
       <div class="brief-card">
-        <div class="bicon">📟</div>
-        <h4>Vitals &amp; General</h4>
+        <div class="bicon" aria-hidden="true">📟</div>
+        <h3 class="h4">Vitals &amp; General</h3>
         <div class="why">Why: baseline vitals anchor your intraoperative monitoring and can surface issues the history missed.</div>
         <ul>
-          <li><strong>BP, HR, RR, SpO2, Temp</strong> — your intraoperative comparison point</li>
+          <li><strong>BP, HR, RR, SpO2, Temp</strong> — your intraoperative comparison point (and act on severe-range values)</li>
           <li><strong>BMI</strong> — affects airway, drug dosing, and positioning</li>
-          <li><strong>General appearance</strong> — distress, pallor, anxiety, ability to lie flat</li>
+          <li><strong>General appearance</strong> — distress, pallor, anxiety, frailty, orientation, ability to lie flat</li>
         </ul>
       </div>
     </div>
 
     <div class="asa-box">
-      <h4>Quick reference: ASA Physical Status Classification</h4>
+      <h2 class="h4" style="font-size:16px; margin-bottom:10px;">Quick reference: ASA Physical Status Classification</h2>
       <div class="muted" style="font-size:12.5px; margin-bottom:10px;">This is where the history and exam come together — the ASA class reflects both.</div>
       <table class="asa-table">
         <tr><td class="cls">ASA I</td><td>A normal, healthy patient</td></tr>
@@ -818,42 +1574,43 @@ function renderLearn(){
         <tr><td class="cls">ASA IV</td><td>Severe systemic disease that is a constant threat to life</td></tr>
         <tr><td class="cls">ASA V</td><td>Moribund, not expected to survive without the operation</td></tr>
         <tr><td class="cls">ASA VI</td><td>Declared brain-dead, organ donor</td></tr>
+        <tr><td class="cls">"E"</td><td>Added to the class for an emergency operation (e.g., ASA III-E)</td></tr>
       </table>
+      <div class="muted" style="font-size:12.5px; margin-top:10px;">ASA class describes overall health — it doesn't predict a difficult airway, so always assess the airway separately.</div>
     </div>
 
     <div class="brief-cta-row">
       <button class="back-link" id="backToSelectFromLearn">← Back to patient list</button>
     </div>
+    ${disclaimerHtml()}
   `;
   document.getElementById('backToSelectFromLearn').addEventListener('click', ()=>{ state.screen='select'; render(); });
 }
 
-function examLabel(key){
-  return {airway:'Airway exam', heart:'Cardiac auscultation', lungs:'Pulmonary auscultation', vitals:'Review vital signs'}[key];
-}
-
 function renderInterview(){
   const c = CASES[state.caseId];
+  const who = speakerFirst(c);
   app.innerHTML = `
     <div class="monitor">
       <div class="who">
-        <h2>${c.name} · ${c.age}${c.sex==='female'?'F':'M'}</h2>
-        <div class="sub">${c.procedure.toUpperCase()}</div>
+        <h2 tabindex="-1" data-screen-heading>${c.name} · ${ageSex(c)}</h2>
+        <div class="sub">${c.procedure.toUpperCase()}${c.speaker ? ` · INTERVIEWING ${c.sex==='female'?'HER':'HIS'} ${c.speaker.relation.toUpperCase()}, ${c.speaker.name.toUpperCase()}` : ''}</div>
       </div>
-      <div style="display:flex; align-items:center; gap:12px;">
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
         <span class="step-badge ${state.introduced?'done':''}">${state.introduced ? '✓ Introduced' : 'Step 1 · Introduce yourself'}</span>
-        <button class="exit-btn" id="endBtn" ${state.introduced ? '' : 'disabled title="Introduce yourself to the patient first"'}>End interview &amp; submit for grading</button>
+        <button class="exit-btn" id="endBtn" ${state.introduced ? '' : 'disabled aria-describedby="introBanner"'}>Finish → Assessment &amp; plan</button>
+        <button class="leave-btn" id="leaveBtn">Leave patient</button>
       </div>
     </div>
-    ${state.error ? `<div class="error-banner">${state.error}</div>` : ''}
-    ${!state.introduced ? `<div class="intro-banner">Before asking any medical questions, introduce yourself to ${c.name.split(' ')[0]} and state your role in their care — e.g. "Hi, I'm ___, a medical student working with your anesthesia team today."</div>` : ''}
+    ${state.error ? `<div class="error-banner" role="alert">${state.error}</div>` : ''}
+    ${!state.introduced ? `<div class="intro-banner" id="introBanner">Before asking any medical questions, introduce yourself to ${who} and state your role in their care — e.g. "Hi, I'm ___, a medical student working with your anesthesia team today." The physical exam and the "Finish" button unlock once you have.</div>` : ''}
     <div class="interview-grid">
       <div class="panel">
         <div class="panel-head">
           <h3>History — Interview</h3>
           <div style="display:flex; gap:6px;">
-            <button class="icon-btn" id="voiceSettingsBtn" title="Voice settings">⚙️</button>
-            <button class="icon-btn ${state.voiceOn?'active':''}" id="voiceToggle" title="Toggle patient voice">${state.voiceOn?'🔊':'🔇'}</button>
+            <button class="icon-btn" id="voiceSettingsBtn" title="Voice settings" aria-label="Voice and microphone settings" aria-expanded="${state.voiceSettingsOpen}"><span aria-hidden="true">⚙️</span></button>
+            <button class="icon-btn ${state.voiceOn?'active':''}" id="voiceToggle" title="Toggle patient voice" aria-label="Read patient replies aloud" aria-pressed="${state.voiceOn}"><span aria-hidden="true">${state.voiceOn?'🔊':'🔇'}</span></button>
           </div>
         </div>
         ${state.voiceSettingsOpen ? `
@@ -863,50 +1620,53 @@ function renderInterview(){
             <input type="password" id="anthropicKeyInputInline" placeholder="sk-ant-..." value="${state.anthropicKey}">
           </div>
           <div class="vs-row">
-            <label>Realistic AI voice ${state.elevenLabsKey ? '<span class="vs-tag">ACTIVE</span>' : '(optional)'}</label>
-            <input type="password" id="elevenKeyInput" placeholder="Paste an ElevenLabs API key…" value="${state.elevenLabsKey}">
+            <label for="elevenKeyInput">Realistic AI voice ${state.elevenLabsKey ? '<span class="vs-tag">ACTIVE</span>' : '(optional)'}</label>
+            <input type="password" id="elevenKeyInput" placeholder="Paste an ElevenLabs API key…" value="${escapeAttr(state.elevenLabsKey)}">
           </div>
           <div class="vs-hint">Adds natural AI-generated speech instead of your browser's built-in voice. Get a free key at elevenlabs.io. Saved in this browser's local storage for next time; used only for direct requests from your browser to ElevenLabs, never sent anywhere else. Leave blank to just use your system voice below.</div>
           <div class="vs-row">
-            <label>System voice (used if no key above)</label>
+            <label for="browserVoiceSelect">System voice (used if no key above)</label>
             <select id="browserVoiceSelect">${voiceOptionsHtml()}</select>
           </div>
           <div class="vs-actions">
-            <button id="checkMicBtn">🎙️ Check microphone</button>
-            <button id="testVoiceBtn">▶ Test voice</button>
+            <button id="checkMicBtn"><span aria-hidden="true">🎙️ </span>Check microphone</button>
+            <button id="testVoiceBtn"><span aria-hidden="true">▶ </span>Test voice</button>
           </div>
-          ${state.micStatus ? `<div class="vs-hint" style="color:${state.micStatus.ok?'var(--green)':'var(--rose)'};">${state.micStatus.msg}</div>` : ''}
+          ${state.micStatus ? `<div class="vs-hint" role="status" style="color:${state.micStatus.ok?'var(--green)':'var(--rose)'};">${state.micStatus.msg}</div>` : ''}
         </div>` : ''}
-        <div class="transcript" id="transcript">
-          ${state.messages.length===0 ? `<div class="bubble patient"><span class="role-tag">Patient</span>Oh, hi — sorry, are you one of the doctors? I don't think we've met.</div>` : ''}
+        <div class="transcript" id="transcript" role="log" aria-label="Interview transcript" tabindex="0">
+          ${state.messages.length===0 ? `<div class="bubble patient"><span class="role-tag">${c.speaker ? who : 'Patient'}</span>${escapeHtml(c.opening || "Oh, hi — sorry, are you one of the doctors? I don't think we've met.")}</div>` : ''}
           ${state.messages.map(m=>`
             <div class="bubble ${m.role==='user'?'student':'patient'}">
-              <span class="role-tag">${m.role==='user'?'You':c.name.split(' ')[0]}</span>${escapeHtml(m.text)}
+              <span class="role-tag">${m.role==='user'?'You':who}</span>${escapeHtml(m.text)}
             </div>
           `).join('')}
-          ${state.sending ? `<div class="bubble patient thinking"><span class="role-tag">${c.name.split(' ')[0]}</span>…thinking…</div>` : ''}
+          ${state.sending ? `<div class="bubble patient thinking"><span class="role-tag">${who}</span>…thinking…</div>` : ''}
         </div>
         ${isIOS()
-          ? '<div class="voice-note">📱 On iPhone/iPad, tap into the box below and use your keyboard\'s own dictation mic (next to the spacebar) to speak your question instead — the app\'s mic button doesn\'t work in Safari/iOS.</div>'
-          : (recognition ? '<div class="voice-note">🎙️ Mic not responding? Open ⚙️ above and click "Check microphone" for a specific diagnosis.</div>' : '<div class="voice-note">Voice input isn\'t supported in this browser — typing works great too.</div>')}
+          ? '<div class="voice-note"><span aria-hidden="true">📱 </span>On iPhone/iPad, tap into the box below and use your keyboard\'s own dictation mic (next to the spacebar) to speak your question instead — the app\'s mic button doesn\'t work in Safari/iOS.</div>'
+          : (recognition ? '<div class="voice-note"><span aria-hidden="true">🎙️ </span>Mic not responding? Open the ⚙️ settings above and choose "Check microphone" for a specific diagnosis.</div>' : '<div class="voice-note">Voice input isn\'t supported in this browser — typing works great too.</div>')}
         <div class="input-row">
-          ${isIOS() ? '' : `<button class="icon-btn ${state.listening?'active':''}" id="micBtn" title="Speak your question" ${recognition? '':'disabled'}>${state.listening?'⏺':'🎙️'}</button>`}
-          <input type="text" id="textInput" placeholder="${state.introduced ? 'Ask your patient something…' : 'Introduce yourself…'}" autocomplete="off">
+          ${isIOS() ? '' : `<button class="icon-btn ${state.listening?'active':''}" id="micBtn" title="Speak your question" aria-label="${state.listening?'Stop listening':'Speak your question'}" aria-pressed="${state.listening}" ${recognition? '':'disabled'}><span aria-hidden="true">${state.listening?'⏺':'🎙️'}</span></button>`}
+          <input type="text" id="textInput" aria-label="Your question to ${escapeAttr(who)}" placeholder="${state.introduced ? 'Ask your patient something…' : 'Introduce yourself…'}" autocomplete="off" enterkeyhint="send" value="${escapeAttr(state.draft)}">
           <button class="send-btn" id="sendBtn" ${state.sending?'disabled':''}>Send</button>
         </div>
       </div>
       <div class="panel ${state.introduced ? '' : 'locked-panel'}">
-        <div class="panel-head"><h3>Physical Exam</h3></div>
-        ${state.introduced ? '' : '<div class="lock-note">🔒 Unlocks once you\'ve introduced yourself</div>'}
+        <div class="panel-head"><h3>Physical Exam</h3><span class="muted" style="font-size:12px;">${state.examDone.size} performed</span></div>
+        ${state.introduced ? '<div class="lock-note">Choose the maneuvers you would perform for this patient.</div>' : '<div class="lock-note"><span aria-hidden="true">🔒 </span>Unlocks once you\'ve introduced yourself</div>'}
         <div class="exam-list">
-          ${['airway','heart','lungs','vitals'].map(key=>`
-            <div class="exam-item ${state.examOpen[key]?'open':''} ${state.examDone.has(key)?'done':''}" data-key="${key}">
-              <button class="exam-toggle">
-                <span>${examLabel(key)}</span>
-                <span class="checkmark">${state.examDone.has(key)?'✓ reviewed':'perform →'}</span>
-              </button>
-              <div class="finding">${c.chart.exam[key]}</div>
-            </div>
+          ${EXAM_GROUPS.map(g=>`
+            <div class="exam-group-title" role="heading" aria-level="4">${g.title}</div>
+            ${g.items.map(([key,label])=>`
+              <div class="exam-item ${state.examOpen[key]?'open':''} ${state.examDone.has(key)?'done':''}" data-key="${key}">
+                <button class="exam-toggle" aria-expanded="${!!state.examOpen[key]}" aria-controls="finding-${key}" ${state.introduced?'':'disabled'}>
+                  <span>${label}</span>
+                  <span class="checkmark">${state.examDone.has(key)?'✓ done':'perform →'}</span>
+                </button>
+                <div class="finding" id="finding-${key}">${c.exam[key]}</div>
+              </div>
+            `).join('')}
           `).join('')}
         </div>
       </div>
@@ -916,7 +1676,10 @@ function renderInterview(){
   const transcriptEl = document.getElementById('transcript');
   transcriptEl.scrollTop = transcriptEl.scrollHeight;
 
-  document.getElementById('endBtn').addEventListener('click', endInterview);
+  document.getElementById('endBtn').addEventListener('click', goToAssessment);
+  document.getElementById('leaveBtn').addEventListener('click', ()=>{
+    if(state.messages.length===0 || confirm('Leave this patient? This interview will be discarded.')) leaveCase();
+  });
   document.getElementById('voiceToggle').addEventListener('click', ()=>{ state.voiceOn=!state.voiceOn; if(!state.voiceOn) stopSpeaking(); render(); });
   document.getElementById('voiceSettingsBtn').addEventListener('click', ()=>{ state.voiceSettingsOpen=!state.voiceSettingsOpen; render(); });
   if(state.voiceSettingsOpen){
@@ -934,7 +1697,7 @@ function renderInterview(){
     voiceSelect.value = state.browserVoiceURI;
     voiceSelect.addEventListener('change', e=>{ state.browserVoiceURI = e.target.value; });
     document.getElementById('testVoiceBtn').addEventListener('click', ()=>{
-      const sex = state.caseId ? CASES[state.caseId].sex : 'female';
+      const sex = state.caseId ? speakerSex(CASES[state.caseId]) : 'female';
       speak("Hi there — this is what I'll sound like during your interview.", sex);
     });
     document.getElementById('checkMicBtn').addEventListener('click', async ()=>{
@@ -944,8 +1707,8 @@ function renderInterview(){
   }
   document.getElementById('sendBtn').addEventListener('click', submitTextInput);
   const inputEl = document.getElementById('textInput');
-  inputEl.addEventListener('keydown', e=>{ if(e.key==='Enter') submitTextInput(); });
-  inputEl.focus();
+  inputEl.addEventListener('input', e=>{ state.draft = e.target.value; });
+  inputEl.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.isComposing) submitTextInput(); });
 
   const micBtn = document.getElementById('micBtn');
   if(micBtn){ micBtn.addEventListener('click', toggleMic); }
@@ -955,8 +1718,12 @@ function renderInterview(){
       if(!state.introduced) return;
       const key = el.dataset.key;
       state.examOpen[key] = !state.examOpen[key];
+      const firstTime = !state.examDone.has(key);
       state.examDone.add(key);
       render();
+      const btn = app.querySelector(`.exam-item[data-key="${key}"] .exam-toggle`);
+      if(btn) btn.focus({preventScroll:true});
+      if(firstTime) announce(`${examLabel(key)}: ${c.exam[key]}`);
     });
   });
 }
@@ -964,12 +1731,16 @@ function renderInterview(){
 function escapeHtml(s){
   const d = document.createElement('div'); d.innerText = s; return d.innerHTML;
 }
+function escapeAttr(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
 function submitTextInput(){
   const inputEl = document.getElementById('textInput');
   const text = inputEl.value.trim();
   if(!text || state.sending) return;
   inputEl.value='';
+  state.draft='';
   sendStudentMessage(text);
 }
 
@@ -1055,17 +1826,17 @@ async function sendStudentMessage(text){
 }
 
 function introCheckSystemPrompt(c){
-  return `You are role-playing as a patient named ${c.name}, a ${c.age}-year-old ${c.sex}, about to have ${c.procedure}. Someone has just walked up and spoken their opening line to you. This is the very first line of a training simulation for a medical student's pre-operative interview.
+  return `${whoYouAre(c)} Someone has just walked up and spoken their opening line to you. This is the very first line of a training simulation for a medical student's pre-operative interview.
 
 Determine whether their opening line includes BOTH:
 1. Some form of their own name or identification (e.g. "Hi, I'm Jordan"). A bare "hi doctor" does NOT count as a name.
 2. A clear statement of their role in the patient's care (e.g. "medical student," "student doctor," "I'm working with your anesthesia team today," "I'll be helping take care of you before surgery"). A vague "I'm here to ask some questions" does NOT count as a role.
 
 Respond with ONLY valid JSON, no markdown fences, no extra text, in exactly this shape:
-{"hasName": <true|false>, "hasRole": <true|false>, "patientReply": "<a short, natural, in-character reply, 1-2 sentences>"}
+{"hasName": <true|false>, "hasRole": <true|false>, "patientReply": "<a short, natural, in-character reply, 1-2 sentences, spoken words only>"}
 
-If both hasName and hasRole are true: patientReply should be a warm, brief greeting back that shows the patient is ready to talk (e.g. "Oh good, nice to meet you — I've been a little nervous waiting here.").
-If either is false: patientReply should be a polite, natural, in-character line where the patient gently asks for whichever piece is missing — the way a real pre-op patient would, not a checklist. Never mention "hasName," "hasRole," JSON, or that this is a simulation — just react as the patient naturally would.`;
+If both hasName and hasRole are true: patientReply should be a warm, brief greeting back that shows you are ready to talk (e.g. "Oh good, nice to meet you — I've been a little nervous waiting here.").
+If either is false: patientReply should be a polite, natural, in-character line where you gently ask for whichever piece is missing — the way a real person would, not a checklist. Never mention "hasName," "hasRole," JSON, or that this is a simulation — just react naturally.`;
 }
 
 async function handleIntroAttempt(text){
@@ -1082,7 +1853,8 @@ async function handleIntroAttempt(text){
     if(parsed.hasName && parsed.hasRole){ state.introduced = true; }
     state.sending=false;
     render();
-    if(state.voiceOn){ speak(parsed.patientReply, c.sex); }
+    announce(`${speakerFirst(c)} says: ${parsed.patientReply}${state.introduced ? ' The physical exam is now unlocked.' : ''}`);
+    if(state.voiceOn){ speak(parsed.patientReply, speakerSex(c)); }
   }catch(err){
     state.sending=false;
     state.error = introErrorMessage(err);
@@ -1109,7 +1881,8 @@ async function handleHistoryMessage(text){
     state.messages.push({role:'assistant', text:reply});
     state.sending=false;
     render();
-    if(state.voiceOn){ speak(reply, c.sex); }
+    announce(`${speakerFirst(c)} says: ${reply}`);
+    if(state.voiceOn){ speak(reply, speakerSex(c)); }
   }catch(err){
     state.sending=false;
     state.error = introErrorMessage(err);
@@ -1128,11 +1901,42 @@ if(typeof speechSynthesis !== 'undefined'){
   speechSynthesis.onvoiceschanged = ()=>{ if(state.voiceSettingsOpen) render(); };
 }
 
-let currentAudio=null;
+/* iPhone/iPad (and Safari on Mac) only allow speech and audio to start from a tap.
+   The patient's reply arrives seconds after the tap, so on the student's first tap
+   we "unlock" both speech synthesis and a reusable <audio> element. */
+const audioEl = new Audio();
+let audioUnlocked = false;
+function silentWavUrl(){
+  const sampleRate = 8000, samples = 400; // 50 ms of silence
+  const buf = new ArrayBuffer(44 + samples*2), v = new DataView(buf);
+  const str = (o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i, s.charCodeAt(i)); };
+  str(0,'RIFF'); v.setUint32(4, 36+samples*2, true); str(8,'WAVE'); str(12,'fmt ');
+  v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,sampleRate,true); v.setUint32(28,sampleRate*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+  str(36,'data'); v.setUint32(40, samples*2, true);
+  return URL.createObjectURL(new Blob([buf], {type:'audio/wav'}));
+}
+function unlockAudio(){
+  if(audioUnlocked) return;
+  audioUnlocked = true;
+  try{
+    if(typeof speechSynthesis !== 'undefined'){
+      const u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0;
+      speechSynthesis.speak(u);
+    }
+  }catch(e){}
+  try{
+    audioEl.src = silentWavUrl();
+    const p = audioEl.play();
+    if(p && p.catch) p.catch(()=>{});
+  }catch(e){}
+}
+['pointerdown','touchend','keydown'].forEach(ev=>document.addEventListener(ev, unlockAudio, {capture:true, passive:true}));
 
 function stopSpeaking(){
   try{ speechSynthesis.cancel(); }catch(e){}
-  if(currentAudio){ currentAudio.pause(); currentAudio=null; }
+  try{ audioEl.pause(); }catch(e){}
 }
 
 async function speak(text, sex){
@@ -1184,95 +1988,275 @@ async function speakElevenLabs(text, sex){
   if(!resp.ok) throw new Error('ElevenLabs request failed: '+resp.status);
   const blob = await resp.blob();
   const url = URL.createObjectURL(blob);
-  if(currentAudio){ currentAudio.pause(); }
-  currentAudio = new Audio(url);
-  currentAudio.play();
+  audioEl.pause();
+  audioEl.src = url;
+  await audioEl.play();
+}
+
+/* ============================= ASSESSMENT & PLAN ============================= */
+function goToAssessment(){
+  stopSpeaking();
+  if(!state.introduced){
+    state.error = "Introduce yourself and state your role before finishing the interview.";
+    render();
+    return;
+  }
+  if(state.messages.filter(m=>m.role==='user').length<2){
+    state.error = "Ask the patient at least one question before finishing.";
+    render();
+    return;
+  }
+  state.error=null;
+  state.screen='assess';
+  render();
+}
+
+function renderAssess(){
+  const c = CASES[state.caseId];
+  const a = state.assessment;
+  const radio = (name, value, label, checked)=>`<label class="choice"><input type="radio" name="${name}" value="${value}" ${checked?'checked':''}><span>${label}</span></label>`;
+  app.innerHTML = `
+    <div class="masthead">
+      <div><h1 tabindex="-1" data-screen-heading>Your Assessment &amp; Plan</h1><div class="tag">${c.name}, ${ageSex(c)} · ${c.procedure}</div></div>
+      <div class="brand-mark" aria-hidden="true">PRE-OP ASSESSMENT<br>TRAINER</div>
+    </div>
+    <p class="muted" style="margin-top:-10px; line-height:1.6; font-size:14.5px;">Pull together what you found, the way you would present to your attending. You asked ${state.messages.filter(m=>m.role==='user').length} questions and performed ${state.examDone.size} exam maneuvers.</p>
+    ${state.error ? `<div class="error-banner" role="alert">${state.error}</div>` : ''}
+    <form class="ap-form" id="apForm" novalidate>
+      <fieldset>
+        <legend>1. ASA physical status</legend>
+        <div class="choice-row">
+          ${[1,2,3,4,5].map(n=>radio('asa', n, ASA_NAMES[n], String(a.asa)===String(n))).join('')}
+        </div>
+        <label class="choice" style="margin-top:8px; display:inline-flex;"><input type="checkbox" id="asaE" ${a.emergency?'checked':''}><span>Add "E" (emergency operation)</span></label>
+      </fieldset>
+      <fieldset>
+        <legend>2. Airway impression</legend>
+        <div class="choice-grid">${AIRWAY_OPTIONS.map(([k,l])=>radio('airway', k, l, a.airway===k)).join('')}</div>
+      </fieldset>
+      <fieldset>
+        <legend>3. Key perioperative risks</legend>
+        <div class="hint">Select every risk this patient actually has. Choosing risks the case doesn't support costs points.</div>
+        <div class="choice-grid">
+          ${RISK_OPTIONS.map(([k,l])=>`<label class="choice"><input type="checkbox" name="risk" value="${k}" ${(a.risks||[]).includes(k)?'checked':''}><span>${l}</span></label>`).join('')}
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>4. Recommendation</legend>
+        <div class="choice-grid">${DISPOSITION_OPTIONS.map(([k,l])=>radio('disposition', k, l, a.disposition===k)).join('')}</div>
+      </fieldset>
+      <fieldset>
+        <legend><label for="planText">5. Your plan and reasoning</label></legend>
+        <div class="hint" id="planHint">What would you tell your attending? E.g., the red flag you found, medications to hold or continue, tests or consults needed, anesthetic and airway plan, what you'd tell the patient.</div>
+        <textarea id="planText" aria-describedby="planHint">${escapeAttr(a.plan||'')}</textarea>
+      </fieldset>
+      <div class="ap-actions">
+        <button type="button" class="back-link" id="backToInterview">← Back to the interview</button>
+        <button type="submit" class="begin-btn" style="padding:13px 22px; font-size:15px;">Submit for grading</button>
+      </div>
+    </form>
+    ${disclaimerHtml()}
+  `;
+  const form = document.getElementById('apForm');
+  form.addEventListener('change', e=>{
+    const t = e.target;
+    if(t.name==='asa') a.asa = t.value;
+    else if(t.name==='airway') a.airway = t.value;
+    else if(t.name==='disposition') a.disposition = t.value;
+    else if(t.id==='asaE') a.emergency = t.checked;
+    else if(t.name==='risk') a.risks = Array.from(form.querySelectorAll('input[name=risk]:checked')).map(x=>x.value);
+    persistSession();
+  });
+  document.getElementById('planText').addEventListener('input', e=>{ a.plan = e.target.value; persistSession(); });
+  document.getElementById('backToInterview').addEventListener('click', ()=>{ state.error=null; state.screen='interview'; render(); });
+  form.addEventListener('submit', e=>{
+    e.preventDefault();
+    const missing = [];
+    if(!a.asa) missing.push('an ASA class');
+    if(!a.airway) missing.push('an airway impression');
+    if(!a.disposition) missing.push('a recommendation');
+    if(missing.length){
+      state.error = 'Please choose ' + missing.join(', ') + ' before submitting.';
+      render();
+      const banner = app.querySelector('.error-banner'); if(banner) banner.scrollIntoView({block:'center'});
+      return;
+    }
+    state.error=null;
+    endInterview();
+  });
 }
 
 /* ============================= GRADING ============================= */
 function renderGrading(){
-  app.innerHTML = `<div class="loading-screen"><div class="spinner"></div>Grading your performance…</div>`;
+  app.innerHTML = `<div class="loading-screen" role="status"><div class="spinner" aria-hidden="true"></div><h1 tabindex="-1" data-screen-heading style="font-size:18px; font-family:'Inter',sans-serif; font-weight:500;">Grading your performance…</h1></div>`;
 }
 
 async function endInterview(){
   stopSpeaking();
-  if(!state.introduced){
-    state.error = "Introduce yourself and state your role before ending the interview.";
-    render();
-    return;
-  }
-  if(state.messages.length===0){
-    state.error = "Ask at least one question before submitting.";
-    render();
-    return;
-  }
   state.screen='grading';
   render();
   const c = CASES[state.caseId];
-  const examDoneList = Array.from(state.examDone).map(examLabel);
-  const transcriptText = state.messages.map(m=> (m.role==='user'?'Student: ':'Patient: ') + m.text).join('\n');
+  const ev = evaluateEncounter(c);
+  const transcriptText = state.messages.map(m=> (m.role==='user'?'Student: ':(c.speaker?'Parent: ':'Patient: ')) + m.text).join('\n');
+  let ai = null, aiError = null;
   try{
     const raw = await callClaude(
-      gradingSystemPrompt(c, examDoneList),
+      gradingSystemPrompt(c, ev),
       [{role:'user', content:'Here is the full transcript of the encounter:\n\n'+transcriptText}],
-      1000
+      1200
     );
     const cleaned = raw.replace(/```json|```/g,'').trim();
-    const parsed = JSON.parse(cleaned);
-    state.report = parsed;
-    state.screen='report';
-    render();
+    ai = JSON.parse(cleaned);
   }catch(err){
-    state.screen='interview';
-    state.error = "Grading failed: " + introErrorMessage(err);
-    render();
+    aiError = (err && err.message) ? err.message : 'unknown error';
   }
+  state.report = {ev, ai, aiError, finishedAt:Date.now()};
+  state.screen='report';
+  render();
 }
 
 /* ============================= REPORT ============================= */
 function renderReport(){
   const c = CASES[state.caseId];
   const r = state.report;
-  const verdict = r.overallScore>=85 ? "Strong, thorough encounter." : r.overallScore>=65 ? "Solid start — a few gaps to tighten up." : "Good practice rep — several important items were missed.";
+  const ev = r.ev, ai = r.ai || {};
+  const verdict = ev.overall>=85 ? "Strong, thorough encounter." : ev.overall>=65 ? "Solid start — a few gaps to tighten up." : "Good practice rep — several important items were missed.";
+  const list = (items, empty)=> (items && items.length) ? items.map(x=>`<li>${escapeHtml(String(x))}</li>`).join('') : `<li>${empty}</li>`;
+  const check = (items)=> items.map(i=>`<li class="${i.hit?'hit':'miss'}"><span class="mark" aria-hidden="true">${i.hit?'✓':'✗'}</span><span><span class="sr-only">${i.hit?'Done: ':'Missed: '}</span>${escapeHtml(i.label)}${i.critical?'<span class="crit-tag">KEY</span>':''}</span></li>`).join('');
+  const p = ev.plan;
+  const riskNames = arr => arr.length ? arr.map(k=>escapeHtml(optionLabel(RISK_OPTIONS,k))).join('<br>') : '—';
   app.innerHTML = `
     <div class="masthead">
-      <div><h1>Encounter Report</h1><div class="tag">${c.name} · ${c.procedure}</div></div>
-      <div class="brand-mark">PRE-OP ASSESSMENT<br>TRAINER</div>
+      <div><h1 tabindex="-1" data-screen-heading>Encounter Report</h1><div class="tag">${c.name} · ${c.procedure}</div><div class="tag">${new Date(r.finishedAt||Date.now()).toLocaleString()}</div></div>
+      <div class="brand-mark" aria-hidden="true">PRE-OP ASSESSMENT<br>TRAINER</div>
     </div>
     <div class="score-hero">
       <div>
         <div class="label">Overall Score</div>
-        <div class="num">${r.overallScore}<span>/100</span></div>
+        <div class="num">${ev.overall}<span>/100</span></div>
       </div>
       <div class="verdict">${verdict}</div>
     </div>
+    ${r.aiError ? `<div class="intro-banner">Written AI feedback wasn't available (${escapeHtml(r.aiError)}). Your scores and checklists below were calculated automatically and are complete.</div>` : ''}
     <div class="domains">
-      ${Object.entries(r.domains).map(([key,d])=>`
+      ${Object.entries(ev.domains).map(([key,d])=>`
         <div class="domain-card">
           <div class="dname">${domainName(key)}</div>
           <div class="dscore">${d.score}<span style="font-size:14px;color:var(--ink-soft);">/${d.max}</span></div>
-          <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,(d.score/d.max)*100)}%"></div></div>
-          <div style="margin-top:8px;font-size:13px;color:var(--ink-soft);line-height:1.5;">${d.feedback}</div>
+          <div class="bar-track" aria-hidden="true"><div class="bar-fill" style="width:${Math.min(100,(d.score/d.max)*100)}%"></div></div>
+          <div style="margin-top:8px;font-size:13px;color:var(--ink-soft);line-height:1.5;">${escapeHtml(d.auto)}${ai[key] ? ' '+escapeHtml(String(ai[key])) : ''}</div>
         </div>
       `).join('')}
     </div>
     <div class="report-section critical">
-      <h4>Missed or incomplete</h4>
-      <ul>${(r.missedCritical||[]).map(x=>`<li>${x}</li>`).join('') || '<li>Nothing significant — nice work.</li>'}</ul>
+      <h2 class="h4">The red flag in this case</h2>
+      <p style="margin:0; line-height:1.6; font-size:14.5px;">${escapeHtml(c.redFlag)}</p>
+    </div>
+    <div class="report-section">
+      <h2 class="h4">History checklist</h2>
+      <p class="note-small">Matched automatically from the words in your questions, so unusual phrasing can be missed. Items marked KEY relate to this case's red flag.</p>
+      <ul class="checklist">${check(ev.history)}</ul>
+    </div>
+    <div class="report-section">
+      <h2 class="h4">Physical exam — key maneuvers</h2>
+      <ul class="checklist">${check(ev.exam)}</ul>
+    </div>
+    <div class="report-section">
+      <h2 class="h4">Your assessment vs. expected</h2>
+      <table class="compare-table">
+        <thead><tr><th scope="col"></th><th scope="col">You</th><th scope="col">Expected</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">ASA class</th><td>${p.asaOk?'✓':'✗'} ${ASA_NAMES[p.asaChosen]||'—'}${p.emergency?'E':''}</td><td>${escapeHtml(c.asaClass)}</td></tr>
+          <tr><th scope="row">Airway</th><td>${p.airwayOk?'✓':'✗'} ${escapeHtml(optionLabel(AIRWAY_OPTIONS,p.airwayChosen))}</td><td>${c.answer.airway.map(k=>escapeHtml(optionLabel(AIRWAY_OPTIONS,k))).join(' or ')}</td></tr>
+          <tr><th scope="row">Recommendation</th><td>${p.dispOk?'✓':'✗'} ${escapeHtml(optionLabel(DISPOSITION_OPTIONS,p.dispChosen))}</td><td>${c.answer.disposition.map(k=>escapeHtml(optionLabel(DISPOSITION_OPTIONS,k))).join(' or ')}</td></tr>
+          <tr><th scope="row">Risks found</th><td colspan="2">${riskNames(p.riskHits)}</td></tr>
+          <tr><th scope="row">Risks missed</th><td colspan="2">${riskNames(p.riskMissed)}</td></tr>
+          ${p.riskExtra.length ? `<tr><th scope="row">Not supported by this case</th><td colspan="2">${riskNames(p.riskExtra)}</td></tr>` : ''}
+        </tbody>
+      </table>
+      <p style="margin:12px 0 0; line-height:1.6; font-size:14.5px;"><strong>Expected reasoning:</strong> ${escapeHtml(c.answer.why)}</p>
+      ${p.planText ? `<p style="margin:12px 0 0; line-height:1.6; font-size:14.5px;"><strong>Your written plan:</strong> ${escapeHtml(p.planText)}</p>` : ''}
+      ${ai.planFeedback ? `<p style="margin:12px 0 0; line-height:1.6; font-size:14.5px;"><strong>Feedback on your plan:</strong> ${escapeHtml(String(ai.planFeedback))}</p>` : ''}
+    </div>
+    ${r.ai ? `
+    <div class="report-section critical">
+      <h2 class="h4">Missed or incomplete</h2>
+      <ul>${list(ai.missedCritical, 'Nothing significant — nice work.')}</ul>
     </div>
     <div class="report-section strength">
-      <h4>What you did well</h4>
-      <ul>${(r.strengths||[]).map(x=>`<li>${x}</li>`).join('')}</ul>
+      <h2 class="h4">What you did well</h2>
+      <ul>${list(ai.strengths, '—')}</ul>
+    </div>` : ''}
+    <div class="report-section">
+      <h2 class="h4">Communication</h2>
+      <ul class="checklist">${check(ev.comm)}</ul>
     </div>
     <div class="report-section teach">
-      <h4>Teaching points for this case</h4>
-      <ul>${(r.teachingPoints||[]).map(x=>`<li>${x}</li>`).join('')}</ul>
+      <h2 class="h4">Teaching points for this case</h2>
+      <ul>${list(c.teachingPoints, '—')}</ul>
     </div>
-    <button class="again-btn" id="againBtn">Try another patient</button>
+    <div class="report-actions">
+      <button class="again-btn" id="againBtn">Try another patient</button>
+      <button class="secondary" id="printBtn">Print or save as PDF</button>
+      <button class="secondary" id="downloadBtn">Download report (.txt)</button>
+    </div>
+    ${disclaimerHtml()}
   `;
   document.getElementById('againBtn').addEventListener('click', ()=>{
-    state.screen='select'; state.caseId=null; state.report=null; render();
+    state.screen='select'; state.caseId=null; state.report=null; state.messages=[]; render();
   });
+  document.getElementById('printBtn').addEventListener('click', ()=>window.print());
+  document.getElementById('downloadBtn').addEventListener('click', downloadReport);
+}
+
+function reportText(){
+  const c = CASES[state.caseId];
+  const r = state.report, ev = r.ev, ai = r.ai || {}, p = ev.plan;
+  const L = [];
+  L.push('PRE-OP ASSESSMENT TRAINER — ENCOUNTER REPORT');
+  L.push(`Patient: ${c.name}, ${ageSex(c)} — ${c.procedure}`);
+  L.push(`Completed: ${new Date(r.finishedAt||Date.now()).toLocaleString()}`);
+  L.push('', `OVERALL SCORE: ${ev.overall}/100`);
+  Object.entries(ev.domains).forEach(([k,d])=>L.push(`  ${domainName(k)}: ${d.score}/${d.max} — ${d.auto}${ai[k]?' '+ai[k]:''}`));
+  L.push('', 'HISTORY CHECKLIST');
+  ev.history.forEach(h=>L.push(`  [${h.hit?'x':' '}] ${h.label}${h.critical?' (KEY)':''}`));
+  L.push('', 'EXAM MANEUVERS');
+  ev.exam.forEach(h=>L.push(`  [${h.hit?'x':' '}] ${h.label}`));
+  L.push('', 'ASSESSMENT & PLAN');
+  L.push(`  ASA: ${ASA_NAMES[p.asaChosen]||'—'}${p.emergency?'E':''} (expected: ${c.asaClass})`);
+  L.push(`  Airway: ${optionLabel(AIRWAY_OPTIONS,p.airwayChosen)}`);
+  L.push(`  Recommendation: ${optionLabel(DISPOSITION_OPTIONS,p.dispChosen)}`);
+  L.push(`  Risks found: ${p.riskHits.map(k=>optionLabel(RISK_OPTIONS,k)).join('; ')||'—'}`);
+  L.push(`  Risks missed: ${p.riskMissed.map(k=>optionLabel(RISK_OPTIONS,k)).join('; ')||'—'}`);
+  if(p.riskExtra.length) L.push(`  Not supported by this case: ${p.riskExtra.map(k=>optionLabel(RISK_OPTIONS,k)).join('; ')}`);
+  L.push(`  Written plan: ${p.planText||'—'}`);
+  if(ai.planFeedback) L.push(`  Feedback: ${ai.planFeedback}`);
+  L.push(`  Expected reasoning: ${c.answer.why}`);
+  if(r.ai){
+    L.push('', 'MISSED OR INCOMPLETE'); (ai.missedCritical||[]).forEach(x=>L.push('  - '+x));
+    L.push('', 'STRENGTHS'); (ai.strengths||[]).forEach(x=>L.push('  - '+x));
+  }
+  L.push('', 'COMMUNICATION');
+  ev.comm.forEach(h=>L.push(`  [${h.hit?'x':' '}] ${h.label}`));
+  L.push('', 'RED FLAG', '  '+c.redFlag);
+  L.push('', 'TEACHING POINTS'); c.teachingPoints.forEach(x=>L.push('  - '+x));
+  L.push('', 'TRANSCRIPT');
+  state.messages.forEach(m=>L.push(`${m.role==='user'?'Student':speakerFirst(c)}: ${m.text}`));
+  L.push('', 'Educational simulation with fictional patients. Not medical advice.');
+  return L.join('\n');
+}
+
+function downloadReport(){
+  const c = CASES[state.caseId];
+  const blob = new Blob([reportText()], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `preop-report-${c.id}-${new Date().toISOString().slice(0,10)}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
 }
 
 function domainName(key){
