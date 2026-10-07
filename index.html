@@ -318,6 +318,8 @@ table.asa-table td.cls{font-family:'JetBrains Mono',monospace; font-weight:700; 
 .compare-table th{font-size:12px; color:var(--ink-soft); font-weight:600;}
 .report-actions{display:flex; flex-wrap:wrap; gap:10px; margin-top:6px;}
 .report-actions .secondary{background:#fff; color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:12px 16px; font-weight:600; font-size:14.5px;}
+.report-section.refs ol{margin:0; padding-left:20px; font-size:13px; line-height:1.6; color:var(--ink-soft);}
+.report-section.refs li{margin-bottom:4px;}
 .note-small{font-size:12.5px; color:var(--ink-soft); line-height:1.5; margin:4px 0 14px;}
 
 .disclaimer{margin-top:34px; padding-top:14px; border-top:1px solid var(--line); font-size:12.5px; color:var(--ink-soft); line-height:1.6;}
@@ -422,6 +424,7 @@ const CASES = {
     answer:{ asa:[2], risks:['aspiration'], okRisks:['mh'], airway:['reassuring'], disposition:['proceed','modify'],
       why:'Low-risk patient: GERD raises aspiration risk (consider aspiration precautions), airway exam is reassuring, and the vague family history should be explored — when it turns out to be non-specific, it is reasonable to proceed.' },
     redFlag:'The vague family history of a "bad reaction" to anesthesia deserves a follow-up question — even though it turns out not to be a clear MH history here, a good student should try to pin it down rather than let it pass.',
+    refs:['asaPS','fasting2017','mhaus','ponv','pregnancyTest'],
     teachingPoints:[
       'This is a "straightforward" case designed to test thoroughness, not crisis recognition — the skill being tested is not missing anything even when nothing looks alarming.',
       'A vague, non-specific family history of an anesthesia "reaction" should always be pursued further (what kind of reaction, was it a young relative, was there fever/muscle rigidity) rather than dismissed.',
@@ -477,6 +480,7 @@ const CASES = {
     answer:{ asa:[3,4], risks:['difficultAirway','osa','cardiac','bleeding'], okRisks:['aspiration','pulmonary','glycemic','drugAllergy','delirium'], airway:['difficult'], disposition:['modify','delay'],
       why:'Predicted difficult airway plus untreated OSA, new exertional chest tightness with a coronary stent, and a recent antiplatelet change. Hip fixation should not be delayed long, so most would proceed with a difficult-airway plan and cardiology input, or briefly delay for cardiac evaluation.' },
     redFlag:'Untreated/undertreated OSA plus a difficult-airway exam (Mallampati III, limited neck extension, short neck) plus new-ish exertional chest tightness in a patient with known CAD — this is the case\'s central teaching point: recognizing a difficult airway AND unclear cardiac stability before a semi-urgent case.',
+    refs:['airway','stopbang','cardiac','asra','asaPS'],
     teachingPoints:[
       'Poor CPAP compliance in a known OSA patient meaningfully raises perioperative respiratory risk (STOP-BANG type reasoning) and should change the plan for opioid dosing/monitoring.',
       'The Mallampati III + limited neck extension + reduced thyromental distance combination should prompt a "difficult airway" plan (equipment, backup, possibly awake technique) before induction.',
@@ -531,6 +535,7 @@ const CASES = {
     answer:{ asa:[2], risks:['mh','pulmonary'], okRisks:[], airway:['reassuring'], disposition:['modify','delay'],
       why:'A family history strongly suggestive of malignant hyperthermia: either proceed with a fully non-triggering anesthetic (no volatile agents or succinylcholine) and MH precautions, or delay this elective case for MH counseling/testing.' },
     redFlag:'A family history strongly suggestive of malignant hyperthermia (childhood surgical death with high fever) is the entire point of this case. A student who does not dig into a vague "bad reaction to anesthesia" family history, or who does not recognize fever + death during surgery as an MH red flag, has missed the critical finding of this encounter.',
+    refs:['mhaus','asaPS','pregnancyTest'],
     teachingPoints:[
       'Never accept a vague family history of an anesthesia "reaction" at face value — always ask what kind of reaction, and specifically about fever, muscle rigidity, and whether the relative survived.',
       'A childhood surgical death associated with high fever is a classic story for malignant hyperthermia (MH) and should trigger consideration of a non-triggering anesthetic technique (avoiding succinylcholine and volatile agents) and possibly referral for MH testing before an elective case.',
@@ -588,6 +593,7 @@ const CASES = {
     answer:{ asa:[2], risks:['aspiration','osa','pulmonary'], okRisks:['difficultAirway'], airway:['reassuring','difficult'], disposition:['delay'],
       why:'Milk and crackers 2 hours ago is a fasting violation (6 hours needed for nonhuman milk and a light meal), so this elective case must be delayed. The recent cold with ongoing cough also raises laryngospasm/bronchospasm risk and may justify postponing further.' },
     redFlag:'A hidden fasting violation (milk and crackers in the car 2 hours ago) only surfaces if the student asks carefully, plus a recent upper respiratory infection with ongoing cough — an elective case that should not go ahead now.',
+    refs:['fasting2017','fasting2023','peUri','pedsResp','tonsil'],
     teachingPoints:[
       'With children, ask the parent specifically about ANY food or drink — snacks in the car and well-meaning relatives are classic sources of fasting violations. ASA fasting guidance: clear liquids 2 h, breast milk 4 h, infant formula / nonhuman milk / light meal 6 h, fatty or fried food 8 h.',
       'A recent upper respiratory infection (within about 2 weeks) increases the risk of laryngospasm, bronchospasm and desaturation; secondhand smoke adds to airway reactivity. Weigh postponing an elective case.',
@@ -642,6 +648,7 @@ const CASES = {
     answer:{ asa:[3], risks:['hypertensiveDisorder','aspiration','difficultAirway'], okRisks:['bleeding','cardiac'], airway:['difficult'], disposition:['modify','delay'],
       why:'Severe-range blood pressure with headache, visual symptoms and RUQ pain = preeclampsia with severe features. Notify OB, treat BP, start magnesium, and check platelets/labs before a spinal. Delivery is the treatment, so the plan is modified (or briefly delayed to stabilize), not cancelled. Pregnancy plus a worsening Mallampati means preparing for a difficult airway and aspiration precautions.' },
     redFlag:'Hidden symptoms of preeclampsia with severe features (persistent headache, visual "sparkles", RUQ pain) with severe-range blood pressure. The student must ask how she is feeling, act on the BP, and get a platelet count before a spinal.',
+    refs:['acogPE','asra','airway','fasting2017'],
     teachingPoints:[
       'Ask every late-pregnancy patient about headache, visual changes, RUQ/epigastric pain and swelling — patients often attribute these to stress or normal pregnancy.',
       'BP ≥160/110 with symptoms suggests preeclampsia with severe features: notify OB, treat the blood pressure, start magnesium for seizure prophylaxis, and send labs (platelets, liver enzymes, creatinine).',
@@ -698,6 +705,7 @@ const CASES = {
     answer:{ asa:[2,3], risks:['aspiration','glycemic'], okRisks:['osa','cardiac'], airway:['reassuring'], disposition:['delay','modify'],
       why:'Active GI symptoms on a GLP-1 receptor agonist suggest delayed gastric emptying — a "full stomach" despite fasting. For an elective case, delay is reasonable; if proceeding, use full-stomach precautions (e.g., gastric ultrasound, rapid sequence induction). He also took his full basal insulin dose and had a morning low, so glucose must be checked and managed.' },
     redFlag:'Ongoing nausea, early fullness and vomiting of undigested food while on a recently increased GLP-1 receptor agonist — a real aspiration risk despite "NPO after midnight". Plus a full glargine dose with a morning glucose of 68.',
+    refs:['glp1asa','glp1multi','adaHospital','sglt2','stopbang'],
     teachingPoints:[
       'GLP-1 receptor agonists (semaglutide, tirzepatide, etc.) slow gastric emptying. Ask about them by name and about injections — patients often leave weekly shots out of a "pill" list.',
       'Guidance on GLP-1 agonists before surgery is evolving (ASA 2023 consensus; 2024 multisociety guidance). Consistent themes: ask about GI symptoms on the day of surgery, consider delaying elective cases when they are present, and treat the patient as a full stomach if you proceed. Follow your institution\'s policy.',
@@ -753,6 +761,7 @@ const CASES = {
     answer:{ asa:[2,3], risks:['bleeding','cardiac'], okRisks:['delirium','drugAllergy'], airway:['reassuring'], disposition:['delay','modify'],
       why:'Apixaban was last taken about 26 hours ago; neuraxial anesthesia generally requires about 72 hours off apixaban (longer with reduced kidney function), so the planned spinal cannot be done today. Options: delay this elective surgery, or change the plan (general anesthesia) after discussing bleeding risk with the surgeon.' },
     redFlag:'"Stop it before surgery" was misunderstood: apixaban was last taken only ~26 hours ago, with reduced kidney function — the planned spinal is contraindicated today.',
+    refs:['asra','apfel','ponv','cardiac'],
     teachingPoints:[
       'For any blood thinner, ask the name, the dose, and the exact date and time of the last dose — vague instructions like "stop before surgery" are commonly misunderstood.',
       'ASRA guidance: hold apixaban about 72 hours before neuraxial anesthesia; reduced kidney function prolongs its effect.',
@@ -811,6 +820,7 @@ const CASES = {
     answer:{ asa:[3], risks:['delirium','goalsOfCare'], okRisks:['cardiac','pulmonary','aspiration'], airway:['reassuring'], disposition:['modify'],
       why:'Very high delirium risk (prior postoperative delirium, cognitive impairment, nightly benzodiazepine and diphenhydramine, alcohol, age, frailty). Proceed with modifications: discuss and document his DNR status ("required reconsideration"), avoid new benzodiazepines and anticholinergics, prefer regional anesthesia, involve his daughter, and plan delirium prevention.' },
     redFlag:'A prior episode of postoperative delirium on top of cognitive impairment, chronic benzodiazepine + diphenhydramine use and nightly alcohol, plus a DNR/POLST that must be discussed before surgery rather than assumed or ignored.',
+    refs:['dnrAsa','dnrAcs','beers','geriatric','cardiac'],
     teachingPoints:[
       'DNR orders are not automatically suspended in the OR. ASA and ACS call for "required reconsideration": discuss with the patient and surrogate what applies during anesthesia and surgery, and document it.',
       'Prior postoperative delirium is one of the strongest predictors of delirium again. Others: cognitive impairment, age, frailty, sensory impairment, alcohol and sedative-hypnotic use.',
@@ -867,6 +877,7 @@ const CASES = {
     answer:{ asa:[2], risks:['transfusion'], okRisks:['bleeding','cardiac'], airway:['reassuring'], disposition:['delay'],
       why:'An elective operation with significant expected blood loss, in a patient who refuses transfusion, with untreated iron-deficiency anemia. Delay to optimize hemoglobin (e.g., IV iron), document exactly which products and techniques he accepts, and plan blood-conservation strategies.' },
     redFlag:'A Jehovah\'s Witness who refuses blood transfusion, with untreated iron-deficiency anemia, going for a high-blood-loss elective operation — and no one has documented which products he would accept.',
+    refs:['bloodAAGBI','jwAAGBI'],
     teachingPoints:[
       'Ask every patient about blood transfusion before an operation where blood loss is likely; never assume "the surgeon knows."',
       'Acceptance of blood fractions (albumin, clotting factors) and techniques (cell salvage, hemodilution) is an individual choice for Jehovah\'s Witnesses — ask about each one and document it.',
@@ -922,6 +933,7 @@ const CASES = {
     answer:{ asa:[2,3], risks:['difficultAirway'], okRisks:['pulmonary','aspiration','bleeding'], airway:['difficult'], disposition:['modify','delay'],
       why:'A documented previous difficult intubation plus a very concerning exam (Mallampati IV, limited mouth opening and neck extension, radiation-scarred neck). Proceed only with a difficult-airway plan (e.g., awake fiberoptic intubation, airway cart, ENT backup) — or delay to obtain the prior anesthesia records.' },
     redFlag:'A previous difficult intubation that the patient will only reveal if asked about past anesthesia, combined with radiation changes to the neck that also make a surgical airway much harder.',
+    refs:['airway'],
     teachingPoints:[
       'A history of difficult intubation is one of the strongest predictors of future difficulty — always ask about previous anesthesia problems and try to get the records or letter.',
       'Neck radiation causes fibrosis: limited mouth opening and neck movement, and a scarred neck that makes emergency front-of-neck access much harder. Plan awake techniques and ENT backup.',
@@ -965,6 +977,38 @@ const AIRWAY_OPTIONS = [
   ['reassuring','Reassuring — routine airway plan'],
   ['difficult','Concerning — prepare a difficult-airway plan']
 ];
+
+/* ============================= REFERENCES =============================
+   Primary guidelines behind the case content and primer. Guidelines are updated
+   periodically — check for newer editions when reviewing cases. */
+const REFS = {
+  asaPS: 'American Society of Anesthesiologists. ASA Physical Status Classification System. Last amended December 2020.',
+  fasting2017: 'American Society of Anesthesiologists. Practice Guidelines for Preoperative Fasting and the Use of Pharmacologic Agents to Reduce the Risk of Pulmonary Aspiration. Anesthesiology. 2017;126(3):376–393.',
+  fasting2023: 'Joshi GP, et al. 2023 ASA Practice Guidelines for Preoperative Fasting: Carbohydrate-containing Clear Liquids with or without Protein, Chewing Gum, and Pediatric Fasting Duration. Anesthesiology. 2023;138(2):132–151.',
+  airway: 'Apfelbaum JL, et al. 2022 American Society of Anesthesiologists Practice Guidelines for Management of the Difficult Airway. Anesthesiology. 2022;136(1):31–81.',
+  stopbang: 'Chung F, et al. STOP Questionnaire: a tool to screen patients for obstructive sleep apnea. Anesthesiology. 2008;108(5):812–821.',
+  cardiac: 'Thompson A, et al. 2024 AHA/ACC/ACS/ASNC/HRS/SCA/SCCT/SCMR/SVM Guideline for Perioperative Cardiovascular Management for Noncardiac Surgery. Circulation. 2024;150(19):e351–e442.',
+  asra: 'Horlocker TT, et al. Regional Anesthesia in the Patient Receiving Antithrombotic or Thrombolytic Therapy: ASRA Evidence-Based Guidelines (Fourth Edition). Reg Anesth Pain Med. 2018;43(3):263–309. (Check for a newer edition.)',
+  glp1asa: 'Joshi GP, et al. American Society of Anesthesiologists Consensus-Based Guidance on Preoperative Management of Patients (Adults and Children) on Glucagon-Like Peptide-1 (GLP-1) Receptor Agonists. June 2023.',
+  glp1multi: 'Multisociety clinical practice guidance (ASA, AGA, ASMBS, ISPCOP, SAGES) for the safe use of GLP-1 receptor agonists in the perioperative period. 2024.',
+  sglt2: 'U.S. Food and Drug Administration. Drug Safety Communication: FDA revises labels of SGLT2 inhibitors for diabetes to include warnings about too much acid in the blood and serious urinary tract infections; and to stop before scheduled surgery. March 2020.',
+  adaHospital: 'American Diabetes Association. Standards of Care in Diabetes — Diabetes Care in the Hospital (current edition). Diabetes Care.',
+  pregnancyTest: 'American Society of Anesthesiologists. Statement on Pregnancy Testing Prior to Anesthesia and Surgery.',
+  mhaus: 'Malignant Hyperthermia Association of the United States (MHAUS). Clinical resources and MH susceptibility testing information. mhaus.org.',
+  peUri: 'Tait AR, Malviya S. Anesthesia for the child with an upper respiratory tract infection: still a dilemma? Anesth Analg. 2005;100(1):59–65.',
+  pedsResp: 'von Ungern-Sternberg BS, et al. Risk assessment for respiratory complications in paediatric anaesthesia: a prospective cohort study. Lancet. 2010;376(9743):773–783.',
+  tonsil: 'Mitchell RB, et al. Clinical Practice Guideline: Tonsillectomy in Children (Update). Otolaryngol Head Neck Surg. 2019;160(1_suppl):S1–S42.',
+  acogPE: 'American College of Obstetricians and Gynecologists. Gestational Hypertension and Preeclampsia. ACOG Practice Bulletin No. 222. Obstet Gynecol. 2020;135(6):e237–e260.',
+  ponv: 'Gan TJ, et al. Fourth Consensus Guidelines for the Management of Postoperative Nausea and Vomiting. Anesth Analg. 2020;131(2):411–448.',
+  apfel: 'Apfel CC, et al. A simplified risk score for predicting postoperative nausea and vomiting. Anesthesiology. 1999;91(3):693–700.',
+  dnrAsa: 'American Society of Anesthesiologists. Ethical Guidelines for the Anesthesia Care of Patients with Do-Not-Resuscitate Orders or Other Directives that Limit Treatment.',
+  dnrAcs: 'American College of Surgeons. Statement on Advance Directives by Patients: "Do Not Resuscitate" in the Operating Room.',
+  beers: 'American Geriatrics Society Beers Criteria Update Expert Panel. American Geriatrics Society 2023 Updated AGS Beers Criteria for Potentially Inappropriate Medication Use in Older Adults. J Am Geriatr Soc. 2023;71(7):2052–2081.',
+  geriatric: 'Chow WB, et al. Optimal Preoperative Assessment of the Geriatric Surgical Patient: A Best Practices Guideline from the ACS NSQIP and the American Geriatrics Society. J Am Coll Surg. 2012;215(4):453–466.',
+  bloodAAGBI: 'Klein AA, et al. Association of Anaesthetists of Great Britain and Ireland: the use of blood components and their alternatives 2016. Anaesthesia. 2016;71(7):829–842.',
+  jwAAGBI: 'Association of Anaesthetists of Great Britain and Ireland. Management of Anaesthesia for Jehovah\'s Witnesses, 2nd edition. 2005.'
+};
+const PRIMER_REFS = ['asaPS','fasting2017','fasting2023','airway','stopbang','cardiac','asra','glp1asa','glp1multi','sglt2','pregnancyTest','dnrAsa'];
 
 /* ============================= INSTRUCTOR CONFIG =============================
    Set this once after deploying the Cloudflare Worker proxy (see
@@ -1579,6 +1623,7 @@ function renderLearn(){
       <div class="muted" style="font-size:12.5px; margin-top:10px;">ASA class describes overall health — it doesn't predict a difficult airway, so always assess the airway separately.</div>
     </div>
 
+    ${refsHtml(PRIMER_REFS)}
     <div class="brief-cta-row">
       <button class="back-link" id="backToSelectFromLearn">← Back to patient list</button>
     </div>
@@ -2195,6 +2240,7 @@ function renderReport(){
       <h2 class="h4">Teaching points for this case</h2>
       <ul>${list(c.teachingPoints, '—')}</ul>
     </div>
+    ${refsHtml(c.refs)}
     <div class="report-actions">
       <button class="again-btn" id="againBtn">Try another patient</button>
       <button class="secondary" id="printBtn">Print or save as PDF</button>
@@ -2240,6 +2286,7 @@ function reportText(){
   ev.comm.forEach(h=>L.push(`  [${h.hit?'x':' '}] ${h.label}`));
   L.push('', 'RED FLAG', '  '+c.redFlag);
   L.push('', 'TEACHING POINTS'); c.teachingPoints.forEach(x=>L.push('  - '+x));
+  if(c.refs && c.refs.length){ L.push('', 'SOURCES'); c.refs.forEach((k,i)=>L.push(`  ${i+1}. ${REFS[k]}`)); }
   L.push('', 'TRANSCRIPT');
   state.messages.forEach(m=>L.push(`${m.role==='user'?'Student':speakerFirst(c)}: ${m.text}`));
   L.push('', 'Educational simulation with fictional patients. Not medical advice.');
@@ -2257,6 +2304,15 @@ function downloadReport(){
   a.click();
   a.remove();
   setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+
+function refsHtml(keys){
+  if(!keys || !keys.length) return '';
+  return `<div class="report-section refs">
+      <h2 class="h4">Sources &amp; further reading</h2>
+      <ol>${keys.map(k=>`<li>${escapeHtml(REFS[k])}</li>`).join('')}</ol>
+      <p class="note-small" style="margin:8px 0 0;">Guidelines are updated periodically — check for the latest version and follow your institution's policies.</p>
+    </div>`;
 }
 
 function domainName(key){
