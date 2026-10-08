@@ -76,22 +76,6 @@ h1:focus, h2:focus{outline:none;}
 }
 @media (max-width:560px){.primer-callout{flex-direction:column; align-items:flex-start;} .primer-callout .begin-btn{width:100%;}}
 
-.setup-card{
-  background:var(--surface); border:1px solid var(--line); border-left:5px solid var(--amber);
-  border-radius:var(--radius); padding:18px 20px; margin-bottom:22px; box-shadow:var(--shadow);
-}
-.setup-card.ready{border-left-color:var(--green);}
-.setup-card h3{font-size:16px; margin-bottom:4px;}
-.setup-card .setup-hint{font-size:13px; color:var(--ink-soft); line-height:1.55; margin-bottom:12px;}
-.setup-card .setup-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
-.setup-card input[type=password]{
-  flex:1; min-width:220px; border:1px solid var(--line); border-radius:8px; padding:10px 12px;
-  font-size:16px; font-family:'Inter',sans-serif;
-}
-.setup-card .save-key-btn{
-  background:var(--teal); color:#fff; border:none; border-radius:8px; padding:10px 16px; font-size:13.5px; font-weight:600; white-space:nowrap;
-}
-
 .chart-rack{display:flex; flex-direction:column; gap:14px;}
 .chart-card{
   background:var(--surface);
@@ -1010,23 +994,431 @@ const REFS = {
 };
 const PRIMER_REFS = ['asaPS','fasting2017','fasting2023','airway','stopbang','cardiac','asra','glp1asa','glp1multi','sglt2','pregnancyTest','dnrAsa'];
 
-/* ============================= INSTRUCTOR CONFIG =============================
-   Set this once after deploying the Cloudflare Worker proxy (see
-   preop-proxy-worker.js for setup steps). Every student uses this same URL —
-   it is not secret, it's just the address of your class's relay server. */
-const PROXY_URL = "PASTE_YOUR_WORKER_URL_HERE";
+/* ============================= SCRIPTED PATIENT =============================
+   The patient answers from a script — no AI, no API key, works offline.
+   A student's question is matched to a topic by keywords (TOPICS, checked in order),
+   and the case's answer for that topic is given. Hidden details live in each case's
+   `followups`: they are checked first and only match specific follow-up questions,
+   so students still have to dig. Topics a case doesn't define fall back to
+   DEFAULT_ANSWERS (a plain "no"). */
+const TOPICS = [
+  ['examReq', /((can|may) i|let me|i('d| would) like to|i('m| am) going to|i'll|i will).{0,25}(examine|listen to|take a look (at|in)|look (at|in) (your|his|her) (mouth|throat|neck|teeth)|check (your|his|her) (heart|lungs|airway|mouth|neck|teeth))|open (your|his|her) mouth|stick out (your|his|her) tongue/],
+  ['famAnes', P.famAnes],
+  ['codeStatus', /(dnr|do not resuscitate|code status|resuscitat|\bcpr\b|advance directive|living will|polst|molst|goals of care|if something (went|goes) wrong|life support|breathing machine|health ?care proxy|power of attorney|your wishes)/],
+  ['transfusion', /(transfus|blood products?|receive blood|accept blood|give you blood|red (blood )?cells|jehovah|witness|religio|beliefs|faith)/],
+  ['prevAnes', new RegExp(P.prevAnes.source + '|past surgical|surgical history|any (other |previous |prior )?(surgery|surgeries|operations?)\\b(?! (are|is|today))|had (any )?(surgery|surgeries|operations?)|been (put )?to sleep')],
+  ['allergy', P.allergy],
+  ['anticoag', new RegExp(P.antithromb.source + '|thin (your|the|his|her) blood')],
+  ['injections', /(injection|\bshots?\b|ozempic|semaglutide|wegovy|mounjaro|tirzepatide|\bglp|weight.?loss (med|drug|shot))/],
+  ['insulin', /(insulin|lantus|glargine|basal)/],
+  ['sleepMeds', /(sleep(ing)? (pill|aid|med)|for sleep|to sleep|help (you|him|her) sleep|trouble sleeping|lorazepam|ativan|benadryl|diphenhydramine|benzo|sedat|nerve pill)/],
+  ['drugs', /(recreational|street drugs|illicit|marijuana|cannabis|\bweed\b|cocaine|heroin|\bmeth\b|use (any )?drugs|do drugs)/],
+  ['alcohol', P.alcohol],
+  ['smoking', P.smoking],
+  ['birth', /(\bborn\b|birth history|premature|preemie|nicu|full.?term|develop|milestone)/],
+  ['familyGen', /(family|relatives|parents|siblings|runs? in)/],
+  ['hpi', /(what brings|why are you (here|having)|what (surgery|procedure|operation) (are you|is he|is she|are we)|tell me about (the|your|his|her) (surgery|procedure|problem|pain|injury|knee|hip|shoulder|gallbladder|hernia)|what('s| is) going on|reason for|what are you (here|having done))/],
+  ['pmh', /(medical (history|problems|conditions|issues)|health (problems|issues|conditions|history)|medical conditions|diagnos|chronic|any (other )?(illness|diseases?)|past history|\bpmh\b)/],
+  ['bp', /(blood pressure|hypertens|\bbp\b|pre-?eclampsia|toxemia)/],
+  ['sugar', /(blood sugar|sugars?\b|glucose|finger ?stick|hypoglyc|diabet|a1c)/],
+  ['pregnancy', new RegExp(P.pregnancy.source + '|\\bbaby\\b|contraction|due date|prenatal|weeks along')],
+  ['npo', P.npo],
+  ['osa', P.osa],
+  ['ill', /(\bcold\b|sick|\bill\b|illness|cough|runny|fevers?|congest|virus|infection)/],
+  ['gi', /(nause|vomit|throw(ing)? up|threw up|bloat|\bfull\b|appetite|reflux|heartburn|stomach|indigestion|gerd)/],
+  ['anemia', /(anemi|\biron\b|hemoglobin|blood count|\bcbc\b|\bpale\b|low blood)/],
+  ['weight', /(weight|lost (any )?pounds)/],
+  ['falls', /(\bfall|\bfell\b|balance|dizz|unsteady)/],
+  ['memory', /(memory|confus|forget|dementia|cognit|thinking clearly|mixed up|alzheim)/],
+  ['cancer', /(cancer|radiation|radiotherapy|tumou?r|chemo)/],
+  ['swallow', /(swallow|voice|hoarse|stridor|noisy breath|chok)/],
+  ['kidney', /(kidney|renal|creatinine)/],
+  ['dentures', /(denture|false teeth|partial|loose (tooth|teeth)|teeth|tooth|bridge|crown)/],
+  ['bleeding', P.bleeding],
+  ['meds', P.meds],
+  ['functional', P.functional],
+  ['cardiac', new RegExp(P.cardiac.source.replace('heart','heart(?!burn)'))],
+  ['pulm', P.pulm],
+  ['feeling', /(how (are|have) you (been )?(feeling|doing)|how do you feel|how('s| is) (he|she) (been|feeling|doing)|any (other )?symptoms|feeling (ok|okay|well|alright))/],
+  ['social', /(\bwork\b|\bjob\b|occupation|live with|living situation|at home|who do you live|married|\bkids\b|children|school)/],
+  ['concerns', /((do you|does he|does she) have|any|what) (questions|concerns|worries)|anything (you're|you are|that's|that is) (worr|concern)|are you (nervous|worried|scared|anxious)|anything else (i|you|we)|what worries you/],
+  ['age', /(how old|your age|\bage\b|date of birth|birthday)/],
+  ['thanks', /(thank you|thanks|that'?s all|goodbye|\bbye\b)/]
+];
+// Topics in the same group are not both answered in one reply (e.g., "allergies to medications")
+const TOPIC_GROUP = {allergy:'meds', anticoag:'meds', injections:'meds', insulin:'meds', sleepMeds:'meds', meds:'meds', drugs:'meds',
+  famAnes:'family', familyGen:'family', osa:'resp', pulm:'resp', ill:'resp', hpi:'overview', pmh:'overview', feeling:'overview', bp:'overview', sugar:'overview'};
 
-/* ============================= SAVED KEYS (this device/browser only) ============================= */
-function loadSavedKey(storageKey){
-  try{ return localStorage.getItem(storageKey) || ''; }catch(e){ return ''; }
-}
-function saveKey(storageKey, value){
-  try{
-    if(value){ localStorage.setItem(storageKey, value); }
-    else{ localStorage.removeItem(storageKey); }
-  }catch(e){ /* private browsing or storage blocked — key just won't persist */ }
+const DEFAULT_ANSWERS = {
+  examReq:"Sure, go ahead.",
+  famAnes:"No, nobody in the family has had any problems with anesthesia that I know of.",
+  familyGen:"Nothing much runs in the family that I know of.",
+  codeStatus:"I haven't really thought about that. I guess I'd want you to do everything you can.",
+  transfusion:"If I needed blood, that would be okay.",
+  drugs:"No, none of that.",
+  alcohol:"No, not really.",
+  smoking:"No, no smoking.",
+  bp:"No, my blood pressure has always been normal as far as I know.",
+  sugar:"No, no diabetes or sugar problems.",
+  npo:"Nothing to eat or drink since midnight.",
+  osa:"No, no snoring problems that I know of.",
+  ill:"No, no recent colds or fevers.",
+  gi:"No, no stomach problems.",
+  anemia:"Not that I know of.",
+  weight:"No, my weight's been about the same.",
+  falls:"No, no falls.",
+  memory:"No, my memory's fine.",
+  cancer:"No, no history of cancer.",
+  swallow:"No, no trouble swallowing, and my voice is fine.",
+  kidney:"Not that I know of — nobody's mentioned any kidney problems.",
+  dentures:"No dentures or loose teeth.",
+  bleeding:"No, no bleeding or bruising problems.",
+  anticoag:"No, no blood thinners.",
+  injections:"No, no injections.",
+  insulin:"No, no insulin.",
+  sleepMeds:"No, nothing for sleep.",
+  cardiac:"No, no chest pain or heart problems.",
+  pulm:"No, my breathing's fine.",
+  feeling:"A little nervous, but otherwise fine.",
+  concerns:"I think you've covered everything — thank you.",
+  thanks:"Thank you, I appreciate it."
+};
+const FALLBACK_LINES = [
+  "Sorry, I'm not sure what you're asking — could you put that another way?",
+  "Hmm, what do you mean?",
+  "I'm sorry, I don't quite follow. Could you ask that differently?"
+];
+const TOPIC_HINT = "Tip: ask about one topic at a time — e.g., the surgery, medical history, past surgeries and anesthesia, medications, allergies, family history, eating and drinking, heart and lungs, daily activity, smoking and alcohol.";
+
+// Context words that tie a follow-up to what was just discussed
+const CTX_FAMILY = /\b(mom|mother|mom's|cousin|he|she|her|him|his|relative|family|that|it|they|reaction)\b/;
+
+const SCRIPTS = {
+  chen:{
+    answers:{
+      hpi:"I'm having my gallbladder taken out. I've been getting bad pain in my upper belly after I eat anything fatty.",
+      pmh:"Just some acid reflux — I take omeprazole for it. Otherwise I'm pretty healthy. No diabetes, heart or lung problems.",
+      prevAnes:"No, I've never had surgery or anesthesia before. This is my first time.",
+      meds:"Omeprazole every day — I took it this morning with a sip of water — and the birth control pill.",
+      allergy:"No, no allergies to any medicines.",
+      npo:"I had dinner around 7 last night, and nothing to eat or drink since midnight.",
+      alcohol:"A glass of wine now and then — maybe two or three a week.",
+      smoking:"No, I've never smoked.",
+      gi:"Just heartburn sometimes if I eat late. The omeprazole mostly takes care of it.",
+      famAnes:"Hmm — my mom said once, years ago, that she had some kind of bad reaction during a surgery. I don't really know the details.",
+      functional:"I walk 30 or 40 minutes most days, and I'm up and down stairs at school all day. No problem.",
+      pregnancy:"I'm on the pill, and my last period ended about two weeks ago, so no. I'm fine with a test if you need one.",
+      social:"I'm a high school teacher. I don't smoke, and I have a glass of wine a couple of times a week.",
+      feeling:"Fine, just nervous — it's my first surgery.",
+      concerns:"I'm nervous since it's my first surgery. Will I feel sick afterwards?",
+      cardiac:"No, no chest pain, palpitations or anything like that."
+    },
+    followups:[
+      {group:'family', any:[/(malignant hyperthermia|\bmh\b)/, [/(reaction|fever|temperature|stiff|rigid|muscle|what happened|what kind|what sort|what type|survive|\bdie\b|details|more about)/, CTX_FAMILY]],
+        answer:"I honestly don't know much more. I've never heard anything about a high fever or stiff muscles — she was fine afterwards, and nobody else in the family has had problems. It might have just been nausea."}
+    ]
+  },
+  okafor:{
+    answers:{
+      hpi:"I fell at home this morning, and now I can't put any weight on my right leg. They tell me I broke my hip.",
+      pmh:"High blood pressure, type 2 diabetes, sleep apnea, and heart disease — I had a stent put in two years ago.",
+      prevAnes:"I had my appendix out as a kid, and they put me under for the heart stent two years ago. No problems either time that I remember.",
+      meds:"Metoprolol twice a day, lisinopril, metformin, and a baby aspirin. I used to take Plavix too, but my heart doctor had me stop it.",
+      anticoag:"I take a baby aspirin every day. I was on Plavix after my stent, but my cardiologist had me stop it five days ago for another procedure I was supposed to have — then I fell.",
+      allergy:"Penicillin — it gives me a rash.",
+      npo:"I had breakfast about three hours before I fell, so maybe nine hours ago. Nothing since.",
+      osa:"I'm supposed to wear a CPAP at night, but honestly I haven't used it for months — it's uncomfortable. My wife says I snore like a train and sometimes stop breathing. I'm tired all day.",
+      cardiac:"Well... I do get some tightness in my chest when I climb stairs. It goes away when I rest. I haven't told my cardiologist about it yet.",
+      bp:"Yes, high blood pressure. I take metoprolol and lisinopril.",
+      sugar:"Yes, type 2 diabetes. I take metformin. My sugars are usually okay, I think.",
+      smoking:"I quit ten years ago. Before that, about a pack a day for thirty years.",
+      alcohol:"Rarely — maybe a beer on the holidays.",
+      functional:"Before the fall, I could get up one flight of stairs, but I'd have to stop because of that chest tightness. I walk slowly around the block.",
+      familyGen:"My father had a heart attack in his sixties. Nothing about anesthesia.",
+      social:"I'm a retired mechanic. I live with my wife.",
+      feeling:"My hip hurts a lot. And I'm tired — I'm always tired these days.",
+      concerns:"How long will I be in the hospital? And is my heart going to be okay through all this?",
+      dentures:"One of my top front teeth is a little loose.",
+      pulm:"I get a little winded, but no wheezing. I used to smoke."
+    },
+    followups:[]
+  },
+  desai:{
+    answers:{
+      hpi:"I tore my meniscus playing soccer, so they're doing a scope on my right knee.",
+      pmh:"Just mild asthma since I was a kid. I use my albuterol inhaler once in a while.",
+      pulm:"My asthma's pretty mild. I wheeze a bit sometimes when I exercise. My last real flare-up was about two years ago, and I've never been in the hospital for it.",
+      prevAnes:"No, I've never had surgery or anesthesia.",
+      meds:"Just my albuterol inhaler when I need it — I last used it about a month ago — and a multivitamin.",
+      allergy:"No allergies.",
+      npo:"Nothing to eat or drink since midnight.",
+      famAnes:"Yes, actually — my cousin on my mom's side died during a surgery when he was little. My family always said it was a bad reaction to the anesthesia medicine.",
+      functional:"Very active — I played club soccer until I got hurt.",
+      pregnancy:"My last period started about three weeks ago. I use condoms. I'd be fine with a test.",
+      alcohol:"Socially, on weekends.",
+      smoking:"No, never.",
+      social:"I'm a college student, and I work part-time as a barista.",
+      ill:"No, I've been healthy — no fevers or colds.",
+      feeling:"Honestly, pretty nervous.",
+      concerns:"I'm really nervous because of what happened to my cousin. Could that happen to me?"
+    },
+    followups:[
+      {group:'family', any:[/(malignant hyperthermia|\bmh\b)/],
+        answer:"I've never heard that term. But they did say he had a really high fever during the operation — is that what that is?"},
+      {group:'family', any:[[/(reaction|fever|temperature|\bhot\b|stiff|rigid|muscle|what happened|what kind|what sort|what type|how old|which surgery|what surgery|details|more about|medicine)/, /\b(cousin|he|him|his|that|it|reaction|family|they)\b/]],
+        answer:"I just remember everyone saying he had a really, really high fever during the operation. I don't know what surgery it was or what medicines they used. It's always scared me."}
+    ]
+  },
+  martinez:{
+    answers:{
+      hpi:"He snores so loudly, and he keeps getting strep throat. The ENT said his tonsils and adenoids need to come out.",
+      pmh:"He's healthy otherwise. He snores every night, and I've seen him stop breathing and gasp. He's had strep five times this year. He gets a little wheezy with colds sometimes, but he doesn't have asthma.",
+      prevAnes:"He had ear tubes when he was two. He was really upset and thrashing when he woke up, but no breathing problems.",
+      meds:"Just children's ibuprofen when his throat hurts — the last time was two days ago — and a kids' multivitamin.",
+      allergy:"No allergies to medicines. No latex allergy either.",
+      npo:"He hasn't had any breakfast — I know he's not supposed to.",
+      ill:"He caught a cold about ten days ago. He still has a runny nose and a wet cough — worse at night — but no fever this week.",
+      osa:"Yes — he snores every night, really loud, and I've watched him stop breathing and then gasp. He's tired and cranky during the day.",
+      bleeding:"No, he doesn't bruise easily or get nosebleeds, and nobody in the family has bleeding problems.",
+      smoking:"Leo? No! But his dad smokes — mostly outside, but sometimes in the car with the kids.",
+      alcohol:"He's six! No.",
+      famAnes:"No, nobody in the family has had problems with anesthesia.",
+      familyGen:"No bleeding problems or anesthesia problems in the family.",
+      birth:"He was born full-term, no NICU, and he's hit all his milestones.",
+      functional:"He's very active — he plays soccer and keeps up with the other kids.",
+      social:"He lives with me, his dad and his little sister. He's in kindergarten, and his shots are up to date.",
+      dentures:"He has a wiggly front tooth right now!",
+      feeling:"He's nervous and clingy, and he still has that cough from his cold.",
+      concerns:"He was so upset waking up last time. Can I stay with him while he falls asleep?",
+      pulm:"He has a wet cough from his cold that's still hanging on. He gets a little wheezy with colds sometimes, but no asthma.",
+      memory:"No, nothing like that."
+    },
+    followups:[
+      {group:'npo', any:[[/(this morning|today|on the way|in the car|anything at all|even a|snack|\bsip|\bbite|cracker|milk|juice|candy|\bgum\b|grandma|since (last night|midnight|bed))/, /(\beat|\bate\b|eaten|drink|drank|food|snack|\bsip|\bbite|milk|juice|cracker|candy|\bgum\b|(did|has) (he|leo) (have|had))/]],
+        answer:"Oh... actually, now that you ask — his grandma gave him a few crackers and a little glass of milk in the car, maybe two hours ago. He was crying because he was so hungry. Is that a problem?"}
+    ]
+  },
+  johnson:{
+    answers:{
+      hpi:"I'm having my second C-section. My first baby was breech, so I had a C-section three years ago.",
+      pmh:"Nothing really. I didn't have high blood pressure before this pregnancy. I've been a little anemic, so I take iron.",
+      prevAnes:"I had a spinal for my first C-section — that went fine, just some itching afterward. And IV sedation for my wisdom teeth.",
+      meds:"Prenatal vitamins and iron. I was on a baby aspirin — my OB said it was to prevent high blood pressure — but I stopped it at 36 weeks like she said. And I took Tylenol twice yesterday for a headache.",
+      anticoag:"I was taking a baby aspirin, but I stopped it at 36 weeks like my OB told me. No other blood thinners.",
+      allergy:"Sulfa antibiotics — I get hives.",
+      npo:"I had some dry toast at 5 this morning, and sips of water until 11.",
+      bp:"It's always been normal before. My mom had high blood pressure when she was pregnant, though.",
+      bleeding:"No bleeding problems. My gums don't bleed, and I don't bruise easily.",
+      pregnancy:"I'm 39 weeks! The baby's moving a lot. No contractions, no leaking or bleeding.",
+      familyGen:"My mom had high blood pressure when she was pregnant with me. No anesthesia or bleeding problems in the family.",
+      functional:"I was walking 30 minutes a day until about a week ago. Stairs are fine.",
+      social:"I'm an accountant. My husband's here with me. I don't smoke, and no alcohol while pregnant.",
+      smoking:"No, never.",
+      alcohol:"Not during the pregnancy.",
+      anemia:"I've been a little anemic this pregnancy, so I take iron.",
+      concerns:"I really want to be awake for the birth, and I want my husband in the room.",
+      cardiac:"No chest pain or trouble breathing."
+    },
+    followups:[
+      {group:'overview', any:[/(headache|head ache|head hurt|vision|visual|see(ing)? (spots|stars|sparkles)|\bspots\b|blurr|swell|puff|right (side|upper)|under (your|the) ribs|belly pain|stomach pain|abdominal pain|epigastr|how (are|have) you (been )?(feeling|doing)|how do you feel|any (other )?symptoms|feeling (ok|okay|well|alright))/],
+        answer:"Honestly, not great. I've had a headache since yesterday that Tylenol isn't touching, and since this morning I keep seeing little sparkles. My face and hands feel puffy, and there's a dull ache under my right ribs. I figured it was just stress."}
+    ]
+  },
+  brooks:{
+    answers:{
+      hpi:"I've got a hernia in my right groin that's been growing for about a year. They're fixing it today.",
+      pmh:"Type 2 diabetes for about twelve years, high blood pressure, and I'm overweight — though I've lost 25 pounds lately. My feet get numb.",
+      prevAnes:"I had my knee scoped ten years ago and a colonoscopy three years ago. No problems with either.",
+      meds:"Metformin, lisinopril, atorvastatin, and Lantus insulin at night.",
+      injections:"Oh, right — I also do a weekly Ozempic shot. They raised the dose about three weeks ago. My last shot was three days ago.",
+      insulin:"Lantus, 40 units every night. I took my usual 40 last night — nobody told me to change it.",
+      sugar:"It was 68 when I checked at quarter to seven this morning, and I felt a bit shaky, so I drank a small glass of apple juice at 7. My last A1c was 8.6.",
+      bp:"Yes, I take lisinopril for it.",
+      npo:"I had a big steak dinner around 8 last night. This morning, just a small glass of apple juice at 7 because my sugar was low.",
+      gi:"Since they raised my Ozempic dose, I've been nauseated most days and bloated, and I get full after a few bites. I threw up two days ago — it was food I'd eaten the night before.",
+      allergy:"No allergies.",
+      osa:"My wife says I snore loudly. I've never had a sleep study.",
+      functional:"I can do two flights of stairs slowly — I get winded, but no chest pain. I walk the dog 20 minutes a day.",
+      cardiac:"No chest pain. I get a little winded on stairs, that's all.",
+      smoking:"Never smoked.",
+      alcohol:"A beer or two on the weekend.",
+      familyGen:"My dad had diabetes too. No anesthesia problems in the family.",
+      social:"I'm a truck dispatcher. Married.",
+      weight:"I've lost about 25 pounds since I started Ozempic four months ago.",
+      feeling:"A little queasy, honestly — that's been going on for a few weeks.",
+      concerns:"When can I eat after surgery? And will my sugars be okay?",
+      dentures:"I have a crown on a bottom tooth, but no dentures."
+    },
+    followups:[]
+  },
+  oneill:{
+    answers:{
+      hpi:"I'm getting my right knee replaced. The arthritis has made walking really hard.",
+      pmh:"Atrial fibrillation — I've had it about three years — high blood pressure, arthritis, and my doctor says my kidneys are a little weak.",
+      prevAnes:"I had a hysterectomy at 45 — I was terribly sick to my stomach for a day afterward. And cataract surgery on both eyes, which went fine.",
+      meds:"Eliquis, metoprolol, amlodipine, Tylenol for my knee, and fish oil.",
+      anticoag:"I take Eliquis for my heart rhythm. The surgeon's office said to stop it before surgery, so I took my last one yesterday morning at 8.",
+      allergy:"Codeine.",
+      npo:"Nothing to eat since 7 last night. I had a small cup of black coffee at 5 this morning.",
+      bp:"Yes, I take amlodipine for it.",
+      kidney:"My doctor says my kidneys are a little weak. I don't know the numbers.",
+      cardiac:"My heart flutters sometimes, but no chest pain. I get a bit short of breath walking uphill.",
+      bleeding:"I bruise easily on the Eliquis, but nothing serious.",
+      dentures:"I have a partial plate on top — it comes out.",
+      functional:"My knee is the main problem. I can do one flight of stairs slowly with the railing, and I use a cane.",
+      pregnancy:"Oh, honey, those days are long behind me!",
+      smoking:"Never.",
+      alcohol:"A glass of wine with dinner now and then.",
+      social:"I'm a retired librarian. I'm widowed, and I live with my daughter.",
+      gi:"No stomach problems — except that awful nausea after my hysterectomy.",
+      concerns:"I really don't want to be as sick to my stomach as I was after my hysterectomy.",
+      feeling:"Fine, apart from this knee."
+    },
+    followups:[
+      {group:'meds', any:[[/(what (happens|happened|kind|type|sort|reaction|did it do)|how did you react|what reaction|\breact)/, /(codeine|allerg|react)/]],
+        answer:"It made me throw up something awful. No rash, no swelling, no trouble breathing."}
+    ]
+  },
+  whitaker:{
+    answers:{
+      hpi:"It's my prostate. I can't pass water on my own, so I've had this catheter.",
+      pmh:"Blood pressure, the prostate, thin bones... and my memory isn't what it was. They said 'mild cognitive' something last year.",
+      prevAnes:"I had a hernia fixed about five years ago. I don't remember much, but my daughter says I was very confused for a few days afterward and didn't know where I was.",
+      meds:"Oh, my daughter handles all that. There's a memory pill, a prostate pill, a blood pressure pill, vitamin D... and something to help me sleep.",
+      sleepMeds:"I take a lorazepam every night to sleep — have for years. Some nights a Benadryl too, when that doesn't do it.",
+      allergy:"No allergies that I know of.",
+      npo:"Nothing since supper at 6, except a sip of water with my pills this morning.",
+      bp:"Yes, I take a pill for it — lisinopril, I think.",
+      codeStatus:"My daughter and I filled out a form last year — a DNR, I think they call it. No machines, no CPR. I'm not sure if that counts during an operation.",
+      memory:"My memory's slipping. I forget names and dates. Sometimes I wake up at night and don't know where I am.",
+      alcohol:"I have one whiskey most nights.",
+      falls:"I've fallen twice in the last six months. Nothing broken, thank goodness.",
+      weight:"I've lost some weight this year — about twelve pounds. I'm not trying to.",
+      functional:"I have to stop halfway up the stairs at home to catch my breath. My daughter helps with shopping and the bills, but I dress and wash myself.",
+      social:"I live alone in a two-story house. My daughter comes by every day.",
+      smoking:"I quit forty years ago.",
+      cardiac:"No chest pain. I get short of breath halfway up the stairs.",
+      dentures:"Full dentures, top and bottom.",
+      feeling:"Tired. I've been weaker this past year.",
+      concerns:"I don't want to end up in a nursing home after this."
+    },
+    followups:[]
+  },
+  mensah:{
+    answers:{
+      hpi:"I'm getting my right hip replaced. The arthritis pain keeps me up at night.",
+      pmh:"Arthritis in my hip and high blood pressure. That's about it.",
+      prevAnes:"I had a knee scope eight years ago with a spinal. No problems.",
+      meds:"Amlodipine for my blood pressure, and ibuprofen — 600 milligrams three times a day for the hip. The last dose was last night.",
+      allergy:"No allergies.",
+      npo:"Nothing to eat since 8 last night, and water until 5 this morning.",
+      bp:"Yes, I take amlodipine for it.",
+      transfusion:"I'm one of Jehovah's Witnesses, so I can't accept a blood transfusion — not even if my life depended on it. I have a card in my wallet that says so. I assumed the surgeon knew.",
+      anemia:"They told me my blood count was a little low two weeks ago and gave me iron pills, but I stopped after three days — they upset my stomach. I've been more tired lately, and a bit out of breath on stairs.",
+      bleeding:"No bleeding problems, and no black stools.",
+      functional:"I can do two flights of stairs — the hip is what slows me down.",
+      cardiac:"No chest pain. A little more out of breath on stairs lately.",
+      smoking:"Never.",
+      alcohol:"I don't drink.",
+      social:"I'm a bus driver. Married, with three kids.",
+      codeStatus:"I want everything done to save me — except blood. That's on my card.",
+      feeling:"More tired than usual for a few months.",
+      concerns:"I want to be sure my wishes about blood are respected."
+    },
+    followups:[
+      {group:'transfusion', any:[/(cell salvage|cell saver|albumin|fraction|clotting factor|factors|plasma|platelets|which (products|parts|ones)|what (would|will|could) you accept|anything you (would|could) accept|recombinant|erythropoie|\bepo\b)/],
+        answer:"I would accept a cell saver if it stays connected to my body the whole time. Albumin and clotting factors are okay for me too. But not whole blood, red cells, white cells, platelets or plasma. Nobody's ever asked me about those details before."}
+    ]
+  },
+  reed:{
+    answers:{
+      hpi:"I tore my rotator cuff — right shoulder. They're repairing it today.",
+      pmh:"I had throat cancer six years ago — radiation to my neck. I'm in remission. Low thyroid since the radiation, and high blood pressure.",
+      cancer:"Throat cancer, six years ago. They treated it with radiation to my neck. I'm in remission now.",
+      prevAnes:"I had a hernia operation three years ago. I woke up with a really sore throat, and the anesthesia doctor told me it had been very hard to get the breathing tube in.",
+      meds:"Levothyroxine, losartan, and a baby aspirin — I took them this morning.",
+      anticoag:"Just a baby aspirin every day. I took it this morning.",
+      allergy:"No allergies.",
+      npo:"Nothing since 9 last night, just a sip of water with my pills at 6.",
+      bp:"Yes, I take losartan.",
+      swallow:"My voice has been hoarse since the radiation, and dry food sometimes sticks when I swallow. My mouth's always dry. No trouble breathing, though.",
+      smoking:"I quit six years ago, after the cancer. About 35 pack-years before that.",
+      alcohol:"Not since the cancer.",
+      functional:"I walk two miles a day. Stairs are no problem.",
+      osa:"I snore a little. Nothing major.",
+      dentures:"I'm missing a few teeth, and one on the bottom is a bit loose.",
+      social:"I'm a retired electrician.",
+      feeling:"Fine — just my shoulder.",
+      concerns:"I really don't want to wake up with that sore throat again."
+    },
+    followups:[
+      {group:'prevAnes', any:[[/(letter|records?|paperwork|what (did|exactly|else)|told you|how many|\bscope\b|awake|tries|attempts|more about|details|what happened)/, /(tube|intubat|anesthe|letter|record|that|hard|difficult|doctor|hernia)/]],
+        answer:"They said it took several tries and a special scope, and that I should tell any future anesthesia team. They gave me a letter about it — it's in a drawer at home. Sorry, I didn't think to bring it."}
+    ]
+  }
+};
+
+const INTRO_NAME = /\b(i'?m|i am|my name is|my name's|this is|name'?s)\s+(?!a\b|an\b|the\b|here\b|with\b|from\b|your\b|going\b|just\b|one\b|part\b|working\b|on\b|so\b|really\b|very\b|glad\b|happy\b|sorry\b|ok\b|okay\b)(dr\.?\s+)?[a-z][a-z'-]+|\bdr\.?\s+[a-z]{2,}/;
+const INTRO_ROLE = /(student|doctor|\bdr\b|resident|intern|anesthesi|nurse|physician|clinician|\bteam\b|taking care|take care|look(ing)? after|help(ing)? (with|take|care)|part of|work(ing)? with)/;
+
+function introReply(c, t){
+  const hasName = INTRO_NAME.test(t), hasRole = INTRO_ROLE.test(t);
+  if(hasName && hasRole) return {ok:true, text: c.greeting || "Oh good, nice to meet you. I've been a little nervous waiting here."};
+  if(hasName) return {ok:false, text:"Nice to meet you. Sorry — what's your role? Are you one of the doctors?"};
+  if(hasRole) return {ok:false, text:"Oh, hello — sorry, I didn't catch your name?"};
+  return {ok:false, text:"Oh — hi. Sorry, who are you?"};
 }
 
+function defaultAnswer(c, id){
+  if(id==='age') return c.speaker ? `He's ${c.age}.` : `I'm ${c.age}.`;
+  if(id==='pregnancy'){
+    if(c.sex==='male') return c.speaker ? "He's a little boy, so no!" : "Ha — no, that's not something I need to worry about.";
+    return "No, I'm not pregnant.";
+  }
+  return DEFAULT_ANSWERS[id] || null;
+}
+
+function matchAlt(alt, t){ return Array.isArray(alt) ? alt.every(r=>r.test(t)) : alt.test(t); }
+
+// Returns {text, topics:[ids], matched:boolean, hint?}
+function scriptedReply(c, rawText){
+  const t = rawText.toLowerCase().replace(/[’‘]/g,"'");
+  const script = SCRIPTS[c.id] || {answers:{}, followups:[]};
+  const asked = state.topicsAsked;
+  const parts = [];
+  const groups = new Set();
+  const multi = /\b(and|or|also)\b|,/.test(t);
+
+  (script.followups||[]).forEach((f,i)=>{
+    if(parts.length) return;
+    if(f.any.some(a=>matchAlt(a,t))){ parts.push({id:'followup-'+i, text:f.answer}); groups.add(f.group); }
+  });
+  for(const [id, re] of TOPICS){
+    if(parts.length>=2 || (parts.length===1 && !multi)) break;
+    if(id==='thanks' && parts.length) continue;
+    const g = TOPIC_GROUP[id] || id;
+    if(groups.has(g) || !re.test(t)) continue;
+    const ans = script.answers[id] || defaultAnswer(c, id);
+    if(!ans) continue;
+    parts.push({id, text:ans});
+    groups.add(g);
+    if(id==='examReq') break;
+  }
+  if(!parts.length){
+    state.misses = (state.misses||0)+1;
+    return {text: FALLBACK_LINES[(state.misses-1) % FALLBACK_LINES.length], topics:[], matched:false, hint:TOPIC_HINT};
+  }
+  let saidLikeISaid = false;
+  const text = parts.map(p=>{
+    const repeat = asked[p.id] > 0 && p.id!=='thanks' && p.id!=='examReq' && !saidLikeISaid;
+    if(repeat) saidLikeISaid = true;
+    asked[p.id] = (asked[p.id]||0)+1;
+    const body = /^I\b/.test(p.text) ? p.text : p.text.charAt(0).toLowerCase() + p.text.slice(1);
+    return repeat ? 'Like I said — ' + body : p.text;
+  }).join(' ');
+  const hint = parts.some(p=>p.id==='examReq') ? 'Use the Physical Exam panel to perform each maneuver you want.' : null;
+  return {text, topics:parts.map(p=>p.id), matched:true, hint};
+}
 
 /* ============================= SAVED SESSION (this device/browser only) =============================
    Phones often reload a tab after the student switches apps; saving the encounter
@@ -1048,7 +1440,7 @@ function persistSession(){
     localStorage.setItem(SESSION_KEY, JSON.stringify({
       screen: state.screen==='grading' ? 'assess' : state.screen,
       caseId: state.caseId, introduced: state.introduced, messages: state.messages,
-      examOpen: state.examOpen, examDone: Array.from(state.examDone), draft: state.draft,
+      examOpen: state.examOpen, examDone: Array.from(state.examDone), draft: state.draft, topicsAsked: state.topicsAsked,
       assessment: state.assessment, report: state.report, startedAt: state.startedAt
     }));
   }catch(e){ /* storage blocked — the session just won't survive a reload */ }
@@ -1066,8 +1458,9 @@ let state = {
   assessment:emptyAssessment(),
   voiceOn:true,
   voiceSettingsOpen:false,
-  classPasscode: loadSavedKey('preop_class_passcode'),
-  elevenLabsKey: loadSavedKey('preop_elevenlabs_key'),
+  topicsAsked:{},      // scripted-patient topic -> times answered (for "Like I said…")
+  misses:0,
+  hint:null,
   browserVoiceURI:'',
   micStatus:null,
   listening:false,
@@ -1083,7 +1476,7 @@ let state = {
   Object.assign(state, {
     screen: ['interview','assess','report'].includes(s.screen) ? s.screen : 'interview',
     caseId: s.caseId, introduced: !!s.introduced, messages: Array.isArray(s.messages) ? s.messages : [],
-    examOpen: s.examOpen || {}, examDone: new Set(s.examDone || []), draft: s.draft || '',
+    examOpen: s.examOpen || {}, examDone: new Set(s.examDone || []), draft: s.draft || '', topicsAsked: s.topicsAsked || {},
     assessment: Object.assign(emptyAssessment(), s.assessment || {}), report: s.report || null, startedAt: s.startedAt || Date.now()
   });
   if(state.screen==='report' && !state.report) state.screen='assess';
@@ -1120,95 +1513,9 @@ function isIOS(){
   return iOSDevice || iPadOS13Plus;
 }
 
-/* ============================= API HELPERS ============================= */
-async function callClaude(system, messages, maxTokens){
-  if(!PROXY_URL || PROXY_URL.indexOf('PASTE_YOUR_WORKER_URL_HERE')!==-1){
-    const err = new Error("This app isn't connected to the class AI service yet — the instructor still needs to set PROXY_URL in the file (see preop-proxy-worker.js for setup steps).");
-    err.code = 'NO_PROXY';
-    throw err;
-  }
-  if(!state.classPasscode){
-    const err = new Error("Enter the class passcode your instructor gave you.");
-    err.code = 'NO_KEY';
-    throw err;
-  }
-  let response;
-  try{
-    response = await fetch(PROXY_URL, {
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "X-Class-Passcode": state.classPasscode
-      },
-      body: JSON.stringify({
-        max_tokens: maxTokens || 1000,
-        system: system,
-        messages: messages
-      })
-    });
-  }catch(networkErr){
-    const err = new Error("Couldn't reach the class AI service (network blocked, or you're inside Claude's in-chat preview, which can't make outside requests). Open this file directly in a browser tab and try again.");
-    err.code='NETWORK';
-    throw err;
-  }
-  if(!response.ok){
-    let detail='';
-    try{ const body = await response.json(); detail = body && body.error && body.error.message ? body.error.message : ''; }catch(e){}
-    if(response.status===401){
-      const err = new Error("That class passcode wasn't recognized. Double-check it with your instructor.");
-      err.code='UNAUTHORIZED';
-      throw err;
-    }
-    const err = new Error(detail || ("Request failed: HTTP "+response.status));
-    err.code='HTTP_'+response.status;
-    throw err;
-  }
-  const data = await response.json();
-  const textBlock = data.content.find(c=>c.type==='text');
-  return textBlock ? textBlock.text : '';
-}
-
-function chartText(c){
-  const ch = c.chart;
-  const lines = [
-    ['CHIEF COMPLAINT', ch.chiefComplaint], ['PAST MEDICAL HISTORY', ch.pmh], ['PAST SURGICAL HISTORY', ch.psh],
-    ['ANESTHESIA HISTORY', ch.anesthesiaHistory], ['MEDICATIONS', ch.medications], ['ALLERGIES', ch.allergies],
-    ['FAMILY HISTORY', ch.familyHistory], ['SOCIAL HISTORY', ch.socialHistory], ['NPO / LAST ORAL INTAKE', ch.npoStatus],
-    ['REVIEW OF SYSTEMS', ch.reviewOfSystems], ['FUNCTIONAL CAPACITY / EXERCISE TOLERANCE', ch.functionalCapacity],
-    ['PREGNANCY STATUS', ch.pregnancy], ['CODE STATUS / ADVANCE DIRECTIVES', ch.codeStatus],
-    ['BELIEFS AFFECTING CARE', ch.beliefs], ['CONCERNS / QUESTIONS FOR THE TEAM', ch.concerns]
-  ];
-  return lines.filter(([,v])=>v).map(([k,v])=>`${k}: ${v}`).join('\n');
-}
-
-function whoYouAre(c){
-  if(c.speaker){
-    return `You are role-playing as ${c.speaker.name}, the ${c.speaker.relation} of ${c.name}, a ${c.age}-year-old ${c.sex==='female'?'girl':'boy'} who is about to have the following procedure: ${c.procedure}. You are answering the interview on your child's behalf.`;
-  }
-  return `You are role-playing as a patient named ${c.name}, a ${c.age}-year-old ${c.sex}, who is about to have the following procedure: ${c.procedure}.`;
-}
-
-function patientSystemPrompt(c){
-  return `${whoYouAre(c)} A fourth-year medical student is interviewing you as part of a pre-operative history and physical exam. This is a training simulation.
-
-Your complete, ground-truth medical chart (the student cannot see this, only you know it) is below. Stay completely consistent with it for the entire conversation. Items marked HIDDEN DETAIL are only revealed when the student asks the kind of question described.
-
-${chartText(c)}
-
-RULES FOR HOW YOU RESPOND:
-- Speak in first person, in plain lay language (not medical jargon back at them).
-- Answer ONLY what is asked. Do not volunteer your entire history unprompted. If asked a broad open-ended question like "tell me about your medical history," give a reasonably brief, natural summary, not an exhaustive recitation.
-- If asked about something not in your chart, say you don't have that problem / it's never come up, consistent with the chart.
-- Show a believable, mild human personality and appropriate emotion (e.g., some anxiety about surgery, mild annoyance if asked the same thing repeatedly, warmth if the student is reassuring) but do not overact.
-- Keep responses fairly short and conversational — 1 to 4 sentences typically, like a real person talking, not a chart dump.
-- Reply with spoken words only — no stage directions, asterisks, or descriptions of actions (your reply may be read aloud).
-- Never break character, never mention that you are an AI, never mention "the chart" or "the case."
-- If the student asks something ambiguous or unclear, respond the way a real person would (asking for clarification, or giving a slightly imprecise answer) rather than being a perfect medical informant.${c.persona ? '\n- '+c.persona : ''}`;
-}
-
 /* ============================= AUTOMATED SCORING =============================
-   Scores are computed here (not by the AI) so every student is graded the same
-   way for the same performance. The AI only writes the narrative feedback. */
+   Scores come from a fixed checklist so every student is graded the same way
+   for the same performance. */
 function studentText(){
   return state.messages.filter(m=>m.role==='user').map(m=>m.text.toLowerCase()).join('\n');
 }
@@ -1262,43 +1569,6 @@ function evaluateEncounter(c){
   const overall = Object.values(domains).reduce((s,d)=>s+d.score,0);
   return {overall, domains, history, exam, comm,
     plan:{asaChosen:asaNum, emergency:!!a.emergency, asaOk, riskHits, riskMissed, riskExtra, airwayChosen:a.airway, airwayOk, dispChosen:a.disposition, dispOk, planText:a.plan||''}};
-}
-
-function gradingSystemPrompt(c, ev){
-  const a = state.assessment;
-  return `You are an attending anesthesiologist giving written feedback on a fourth-year medical student's pre-operative history and physical in a simulated encounter. Be a fair but rigorous, encouraging teacher — this is formative feedback, not a real clinical record. The numeric scores have already been calculated automatically; do NOT produce scores.
-
-GROUND TRUTH CASE (the student did not see this):
-Patient: ${c.name}, ${ageSex(c)}, procedure: ${c.procedure}${c.speaker ? `\n(The student interviewed the ${c.speaker.relation}, ${c.speaker.name}.)` : ''}
-${chartText(c)}
-Exam findings available: ${JSON.stringify(c.exam)}
-Expected ASA classification: ${c.asaClass}
-The critical teaching point / red flag for this case: ${c.redFlag}
-Expected assessment & plan: ${c.answer.why}
-
-AUTOMATED CHECKLIST (keyword-based, so it can miss unusual phrasing — if the transcript shows the student DID cover an item marked missed, say so):
-${ev.history.map(h=>`- [${h.hit?'covered':'missed'}] ${h.label}`).join('\n')}
-
-EXAM MANEUVERS THE STUDENT PERFORMED: ${state.examDone.size ? Array.from(state.examDone).map(examLabel).join(', ') : 'none'}
-
-STUDENT'S ASSESSMENT & PLAN:
-ASA: ${ASA_NAMES[Number(a.asa)]||'not given'}${a.emergency?'E':''}
-Risks identified: ${(a.risks||[]).map(r=>optionLabel(RISK_OPTIONS,r)).join('; ') || 'none'}
-Airway impression: ${optionLabel(AIRWAY_OPTIONS, a.airway) || 'not given'}
-Disposition: ${optionLabel(DISPOSITION_OPTIONS, a.disposition) || 'not given'}
-Plan and reasoning (free text): ${a.plan ? a.plan : '(none written)'}
-
-Respond with ONLY valid JSON, no markdown fences, no preamble, matching exactly this shape:
-{
-  "history": "<1-2 sentence feedback on their history taking>",
-  "physicalExam": "<1-2 sentence feedback on their exam>",
-  "clinicalReasoning": "<1-2 sentence feedback on whether they identified the red flag, risks and a reasonable ASA class>",
-  "communication": "<1-2 sentence feedback on rapport, clarity, their introduction, and follow-up questions>",
-  "planFeedback": "<2-3 sentences on their written plan — what was sound, what was missing or unsafe>",
-  "missedCritical": ["<specific important item they failed to ask or check, be concrete>", "..."],
-  "strengths": ["<specific thing they did well, referencing something they actually asked or wrote>", "..."]
-}
-Base missedCritical and strengths on the ACTUAL transcript provided in the next message, citing specifics. Keep each array to at most 4 concise items.`;
 }
 
 /* ============================= RENDER ============================= */
@@ -1358,7 +1628,7 @@ function focusTextInput(){
 }
 
 function disclaimerHtml(){
-  return `<div class="disclaimer">Educational simulation for medical students. All patients are fictional and the AI patient can make mistakes. This is not medical advice and is not for clinical decision-making — always follow your attending and your institution's policies. Do not enter real patient information.</div>`;
+  return `<div class="disclaimer">Educational simulation for medical students. All patients are fictional and their answers are scripted. This is not medical advice and is not for clinical decision-making — always follow your attending and your institution's policies. Do not enter real patient information.</div>`;
 }
 
 function renderSelect(){
@@ -1370,18 +1640,6 @@ function renderSelect(){
       </div>
       <div class="brand-mark" aria-hidden="true">ANESTHESIA<br>ELECTIVE · 4TH YEAR</div>
     </div>
-    <div class="setup-card ${state.classPasscode ? 'ready' : ''}">
-      <h3>${state.classPasscode ? '✓ Connected' : 'Enter your class passcode'}</h3>
-      <div class="setup-hint" id="passcodeHint">
-        ${state.classPasscode
-          ? "You can update it below at any time if your instructor changes it."
-          : "The patient and grading are powered by Claude. Enter the passcode your instructor gave you — it's saved on this device so you won't need to re-enter it next time. This isn't a personal account or API key; it's a shared class passcode, and everyone in the class uses the same one."}
-      </div>
-      <div class="setup-row">
-        <input type="password" id="classPasscodeInput" placeholder="Class passcode" aria-label="Class passcode" aria-describedby="passcodeHint" autocomplete="off" value="${escapeAttr(state.classPasscode)}">
-        <button class="save-key-btn" id="saveKeyBtn">${state.classPasscode ? 'Update' : 'Save'}</button>
-      </div>
-    </div>
     <div class="primer-callout">
       <div>
         <div class="eyebrow">Start here</div>
@@ -1391,7 +1649,7 @@ function renderSelect(){
       <button class="begin-btn" id="learnBtn">Read the primer</button>
     </div>
     <div class="intro">
-      <p>Then pick a patient below. You'll interview them by voice or by typing — ask about their history the way you would on the wards. Then perform the physical exam maneuvers you think matter, write your own assessment and plan, and submit for a graded report.</p>
+      <p>Then pick a patient below. You'll interview them by typing (or by voice, where your device supports it) — ask about their history the way you would on the wards. Then perform the physical exam maneuvers you think matter, write your own assessment and plan, and submit for a graded report.</p>
     </div>
     <div class="chart-rack" role="list">
       ${Object.values(CASES).map(c=>`
@@ -1412,19 +1670,6 @@ function renderSelect(){
   app.querySelectorAll('.begin-btn[data-case]').forEach(btn=>{
     btn.addEventListener('click', ()=>startCase(btn.dataset.case));
   });
-  const keyInput = document.getElementById('classPasscodeInput');
-  document.getElementById('saveKeyBtn').addEventListener('click', ()=>{
-    state.classPasscode = keyInput.value.trim();
-    saveKey('preop_class_passcode', state.classPasscode);
-    render();
-  });
-  keyInput.addEventListener('keydown', e=>{
-    if(e.key==='Enter'){
-      state.classPasscode = keyInput.value.trim();
-      saveKey('preop_class_passcode', state.classPasscode);
-      render();
-    }
-  });
 }
 
 function startCase(id){
@@ -1438,6 +1683,9 @@ function startCase(id){
   state.report=null;
   state.error=null;
   state.micStatus=null;
+  state.topicsAsked={};
+  state.misses=0;
+  state.hint=null;
   state.startedAt=Date.now();
   state.screen='interview';
   render();
@@ -1661,16 +1909,7 @@ function renderInterview(){
         ${state.voiceSettingsOpen ? `
         <div class="voice-settings">
           <div class="vs-row">
-            <label>Anthropic API key ${state.anthropicKey ? '<span class="vs-tag">SET</span>' : '(required — the patient won\'t respond without it)'}</label>
-            <input type="password" id="anthropicKeyInputInline" placeholder="sk-ant-..." value="${state.anthropicKey}">
-          </div>
-          <div class="vs-row">
-            <label for="elevenKeyInput">Realistic AI voice ${state.elevenLabsKey ? '<span class="vs-tag">ACTIVE</span>' : '(optional)'}</label>
-            <input type="password" id="elevenKeyInput" placeholder="Paste an ElevenLabs API key…" value="${escapeAttr(state.elevenLabsKey)}">
-          </div>
-          <div class="vs-hint">Adds natural AI-generated speech instead of your browser's built-in voice. Get a free key at elevenlabs.io. Saved in this browser's local storage for next time; used only for direct requests from your browser to ElevenLabs, never sent anywhere else. Leave blank to just use your system voice below.</div>
-          <div class="vs-row">
-            <label for="browserVoiceSelect">System voice (used if no key above)</label>
+            <label for="browserVoiceSelect">Patient voice</label>
             <select id="browserVoiceSelect">${voiceOptionsHtml()}</select>
           </div>
           <div class="vs-actions">
@@ -1691,6 +1930,7 @@ function renderInterview(){
         ${isIOS()
           ? '<div class="voice-note"><span aria-hidden="true">📱 </span>On iPhone/iPad, tap into the box below and use your keyboard\'s own dictation mic (next to the spacebar) to speak your question instead — the app\'s mic button doesn\'t work in Safari/iOS.</div>'
           : (recognition ? '<div class="voice-note"><span aria-hidden="true">🎙️ </span>Mic not responding? Open the ⚙️ settings above and choose "Check microphone" for a specific diagnosis.</div>' : '<div class="voice-note">Voice input isn\'t supported in this browser — typing works great too.</div>')}
+        ${state.hint ? `<div class="voice-note" role="status" style="color:var(--teal-deep); font-weight:600;">${escapeHtml(state.hint)}</div>` : ''}
         <div class="input-row">
           ${isIOS() ? '' : `<button class="icon-btn ${state.listening?'active':''}" id="micBtn" title="Speak your question" aria-label="${state.listening?'Stop listening':'Speak your question'}" aria-pressed="${state.listening}" ${recognition? '':'disabled'}><span aria-hidden="true">${state.listening?'⏺':'🎙️'}</span></button>`}
           <input type="text" id="textInput" aria-label="Your question to ${escapeAttr(who)}" placeholder="${state.introduced ? 'Ask your patient something…' : 'Introduce yourself…'}" autocomplete="off" enterkeyhint="send" value="${escapeAttr(state.draft)}">
@@ -1728,16 +1968,6 @@ function renderInterview(){
   document.getElementById('voiceToggle').addEventListener('click', ()=>{ state.voiceOn=!state.voiceOn; if(!state.voiceOn) stopSpeaking(); render(); });
   document.getElementById('voiceSettingsBtn').addEventListener('click', ()=>{ state.voiceSettingsOpen=!state.voiceSettingsOpen; render(); });
   if(state.voiceSettingsOpen){
-    const anthropicInput = document.getElementById('anthropicKeyInputInline');
-    anthropicInput.addEventListener('input', e=>{
-      state.anthropicKey = e.target.value.trim();
-      saveKey('preop_anthropic_key', state.anthropicKey);
-    });
-    const keyInput = document.getElementById('elevenKeyInput');
-    keyInput.addEventListener('input', e=>{
-      state.elevenLabsKey = e.target.value.trim();
-      saveKey('preop_elevenlabs_key', state.elevenLabsKey);
-    });
     const voiceSelect = document.getElementById('browserVoiceSelect');
     voiceSelect.value = state.browserVoiceURI;
     voiceSelect.addEventListener('change', e=>{ state.browserVoiceURI = e.target.value; });
@@ -1870,19 +2100,8 @@ async function sendStudentMessage(text){
   }
 }
 
-function introCheckSystemPrompt(c){
-  return `${whoYouAre(c)} Someone has just walked up and spoken their opening line to you. This is the very first line of a training simulation for a medical student's pre-operative interview.
-
-Determine whether their opening line includes BOTH:
-1. Some form of their own name or identification (e.g. "Hi, I'm Jordan"). A bare "hi doctor" does NOT count as a name.
-2. A clear statement of their role in the patient's care (e.g. "medical student," "student doctor," "I'm working with your anesthesia team today," "I'll be helping take care of you before surgery"). A vague "I'm here to ask some questions" does NOT count as a role.
-
-Respond with ONLY valid JSON, no markdown fences, no extra text, in exactly this shape:
-{"hasName": <true|false>, "hasRole": <true|false>, "patientReply": "<a short, natural, in-character reply, 1-2 sentences, spoken words only>"}
-
-If both hasName and hasRole are true: patientReply should be a warm, brief greeting back that shows you are ready to talk (e.g. "Oh good, nice to meet you — I've been a little nervous waiting here.").
-If either is false: patientReply should be a polite, natural, in-character line where you gently ask for whichever piece is missing — the way a real person would, not a checklist. Never mention "hasName," "hasRole," JSON, or that this is a simulation — just react naturally.`;
-}
+// Short pause so the reply feels like a person answering, not a lookup
+function patientPause(text){ return new Promise(r=>setTimeout(r, Math.min(1400, 450 + text.length*6))); }
 
 async function handleIntroAttempt(text){
   const c = CASES[state.caseId];
@@ -1890,28 +2109,15 @@ async function handleIntroAttempt(text){
   state.sending=true;
   state.error=null;
   render();
-  try{
-    const raw = await callClaude(introCheckSystemPrompt(c), [{role:'user', content:text}], 300);
-    const cleaned = raw.replace(/```json|```/g,'').trim();
-    const parsed = JSON.parse(cleaned);
-    state.messages.push({role:'assistant', text:parsed.patientReply});
-    if(parsed.hasName && parsed.hasRole){ state.introduced = true; }
-    state.sending=false;
-    render();
-    announce(`${speakerFirst(c)} says: ${parsed.patientReply}${state.introduced ? ' The physical exam is now unlocked.' : ''}`);
-    if(state.voiceOn){ speak(parsed.patientReply, speakerSex(c)); }
-  }catch(err){
-    state.sending=false;
-    state.error = introErrorMessage(err);
-    render();
-  }
-}
-
-function introErrorMessage(err){
-  if(err && err.code==='NO_KEY') return "The AI patient can't respond yet — you need to add an Anthropic API key first. Open ⚙️ above and paste one in.";
-  if(err && err.code==='UNAUTHORIZED') return err.message;
-  if(err && err.code==='NETWORK') return err.message;
-  return "The AI patient didn't respond (" + (err && err.message ? err.message : 'unknown error') + "). Check your API key and connection, then try again.";
+  const r = introReply(c, text.toLowerCase().replace(/[’‘]/g,"'"));
+  await patientPause(r.text);
+  state.messages.push({role:'assistant', text:r.text});
+  if(r.ok) state.introduced = true;
+  state.hint = r.ok ? null : 'Introduce yourself with your name and your role, e.g. "Hi, I\'m Sam, a medical student with the anesthesia team."';
+  state.sending=false;
+  render();
+  announce(`${speakerFirst(c)} says: ${r.text}${state.introduced ? ' The physical exam is now unlocked.' : ''}`);
+  if(state.voiceOn){ speak(r.text, speakerSex(c)); }
 }
 
 async function handleHistoryMessage(text){
@@ -1920,19 +2126,14 @@ async function handleHistoryMessage(text){
   state.sending=true;
   state.error=null;
   render();
-  try{
-    const apiMessages = state.messages.map(m=>({role:m.role, content:m.text}));
-    const reply = await callClaude(patientSystemPrompt(c), apiMessages, 400);
-    state.messages.push({role:'assistant', text:reply});
-    state.sending=false;
-    render();
-    announce(`${speakerFirst(c)} says: ${reply}`);
-    if(state.voiceOn){ speak(reply, speakerSex(c)); }
-  }catch(err){
-    state.sending=false;
-    state.error = introErrorMessage(err);
-    render();
-  }
+  const r = scriptedReply(c, text);
+  await patientPause(r.text);
+  state.messages.push({role:'assistant', text:r.text});
+  state.hint = r.hint || null;
+  state.sending=false;
+  render();
+  announce(`${speakerFirst(c)} says: ${r.text}`);
+  if(state.voiceOn){ speak(r.text, speakerSex(c)); }
 }
 
 function voiceOptionsHtml(){
@@ -1984,58 +2185,29 @@ function stopSpeaking(){
   try{ audioEl.pause(); }catch(e){}
 }
 
-async function speak(text, sex){
-  if(state.elevenLabsKey){
-    try{
-      await speakElevenLabs(text, sex);
-      return;
-    }catch(err){
-      state.error = "AI voice failed (check your ElevenLabs key or credits, and that you're not viewing this inside Claude's in-chat preview) — used your system voice instead.";
-      render();
-    }
-  }
+function speak(text, sex){
   speakBrowser(text, sex);
 }
 
+const FEMALE_VOICE = /(female|zira|samantha|victoria|aria|jenny|karen|moira|tessa|fiona|serena|susan|allison|ava|nicky|joanna|salli|kimberly)/i;
+const MALE_VOICE = /(\bmale\b|david|daniel|alex|guy|davis|fred|aaron|arthur|gordon|rishi|oliver|\btom\b|mark|james|george|matthew|joey|justin)/i;
 function speakBrowser(text, sex){
   try{
     speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
-    const voices = speechSynthesis.getVoices();
+    const voices = speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));
     let chosen=null;
-    if(state.browserVoiceURI){ chosen = voices.find(v=>v.voiceURI===state.browserVoiceURI); }
+    if(state.browserVoiceURI){ chosen = speechSynthesis.getVoices().find(v=>v.voiceURI===state.browserVoiceURI); }
     if(!chosen){
+      // "Female" contains "male", so a male voice must also not match the female list
       chosen = voices.find(v=> sex==='female'
-        ? /female|zira|samantha|victoria|aria|jenny|natural/i.test(v.name)
-        : /male|david|daniel|alex|guy|davis|natural/i.test(v.name));
+        ? FEMALE_VOICE.test(v.name)
+        : MALE_VOICE.test(v.name) && !FEMALE_VOICE.test(v.name));
     }
     if(chosen) utter.voice = chosen;
     utter.rate = 1.0;
     speechSynthesis.speak(utter);
   }catch(e){/* speech synthesis not available, ignore */}
-}
-
-async function speakElevenLabs(text, sex){
-  const voiceId = sex==='female' ? '21m00Tcm4TlvDq8ikWAM' : 'pNInz6obpgDQGcFmaJgB'; // Rachel / Adam (ElevenLabs premade voices)
-  const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-    method:'POST',
-    headers:{
-      'xi-api-key': state.elevenLabsKey,
-      'Content-Type':'application/json',
-      'Accept':'audio/mpeg'
-    },
-    body: JSON.stringify({
-      text: text,
-      model_id: 'eleven_turbo_v2',
-      voice_settings:{ stability:0.5, similarity_boost:0.75 }
-    })
-  });
-  if(!resp.ok) throw new Error('ElevenLabs request failed: '+resp.status);
-  const blob = await resp.blob();
-  const url = URL.createObjectURL(blob);
-  audioEl.pause();
-  audioEl.src = url;
-  await audioEl.play();
 }
 
 /* ============================= ASSESSMENT & PLAN ============================= */
@@ -2142,20 +2314,8 @@ async function endInterview(){
   render();
   const c = CASES[state.caseId];
   const ev = evaluateEncounter(c);
-  const transcriptText = state.messages.map(m=> (m.role==='user'?'Student: ':(c.speaker?'Parent: ':'Patient: ')) + m.text).join('\n');
-  let ai = null, aiError = null;
-  try{
-    const raw = await callClaude(
-      gradingSystemPrompt(c, ev),
-      [{role:'user', content:'Here is the full transcript of the encounter:\n\n'+transcriptText}],
-      1200
-    );
-    const cleaned = raw.replace(/```json|```/g,'').trim();
-    ai = JSON.parse(cleaned);
-  }catch(err){
-    aiError = (err && err.message) ? err.message : 'unknown error';
-  }
-  state.report = {ev, ai, aiError, finishedAt:Date.now()};
+  await new Promise(r=>setTimeout(r, 600));
+  state.report = {ev, finishedAt:Date.now()};
   state.screen='report';
   render();
 }
@@ -2164,7 +2324,11 @@ async function endInterview(){
 function renderReport(){
   const c = CASES[state.caseId];
   const r = state.report;
-  const ev = r.ev, ai = r.ai || {};
+  const ev = r.ev;
+  const missedExam = ev.exam.filter(e=>!e.hit).map(e=>e.label);
+  const gaps = ev.history.filter(h=>h.critical && !h.hit).map(h=>h.label)
+    .concat(ev.plan.riskMissed.map(k=>'Risk not identified: '+optionLabel(RISK_OPTIONS,k)))
+    .concat(missedExam.length ? ['Exam maneuvers not performed: '+missedExam.join(', ')] : []);
   const verdict = ev.overall>=85 ? "Strong, thorough encounter." : ev.overall>=65 ? "Solid start — a few gaps to tighten up." : "Good practice rep — several important items were missed.";
   const list = (items, empty)=> (items && items.length) ? items.map(x=>`<li>${escapeHtml(String(x))}</li>`).join('') : `<li>${empty}</li>`;
   const check = (items)=> items.map(i=>`<li class="${i.hit?'hit':'miss'}"><span class="mark" aria-hidden="true">${i.hit?'✓':'✗'}</span><span><span class="sr-only">${i.hit?'Done: ':'Missed: '}</span>${escapeHtml(i.label)}${i.critical?'<span class="crit-tag">KEY</span>':''}</span></li>`).join('');
@@ -2182,20 +2346,23 @@ function renderReport(){
       </div>
       <div class="verdict">${verdict}</div>
     </div>
-    ${r.aiError ? `<div class="intro-banner">Written AI feedback wasn't available (${escapeHtml(r.aiError)}). Your scores and checklists below were calculated automatically and are complete.</div>` : ''}
     <div class="domains">
       ${Object.entries(ev.domains).map(([key,d])=>`
         <div class="domain-card">
           <div class="dname">${domainName(key)}</div>
           <div class="dscore">${d.score}<span style="font-size:14px;color:var(--ink-soft);">/${d.max}</span></div>
           <div class="bar-track" aria-hidden="true"><div class="bar-fill" style="width:${Math.min(100,(d.score/d.max)*100)}%"></div></div>
-          <div style="margin-top:8px;font-size:13px;color:var(--ink-soft);line-height:1.5;">${escapeHtml(d.auto)}${ai[key] ? ' '+escapeHtml(String(ai[key])) : ''}</div>
+          <div style="margin-top:8px;font-size:13px;color:var(--ink-soft);line-height:1.5;">${escapeHtml(d.auto)}</div>
         </div>
       `).join('')}
     </div>
     <div class="report-section critical">
       <h2 class="h4">The red flag in this case</h2>
       <p style="margin:0; line-height:1.6; font-size:14.5px;">${escapeHtml(c.redFlag)}</p>
+    </div>
+    <div class="report-section critical">
+      <h2 class="h4">Your biggest gaps</h2>
+      <ul>${list(gaps, 'No major gaps — nice work.')}</ul>
     </div>
     <div class="report-section">
       <h2 class="h4">History checklist</h2>
@@ -2221,17 +2388,7 @@ function renderReport(){
       </table>
       <p style="margin:12px 0 0; line-height:1.6; font-size:14.5px;"><strong>Expected reasoning:</strong> ${escapeHtml(c.answer.why)}</p>
       ${p.planText ? `<p style="margin:12px 0 0; line-height:1.6; font-size:14.5px;"><strong>Your written plan:</strong> ${escapeHtml(p.planText)}</p>` : ''}
-      ${ai.planFeedback ? `<p style="margin:12px 0 0; line-height:1.6; font-size:14.5px;"><strong>Feedback on your plan:</strong> ${escapeHtml(String(ai.planFeedback))}</p>` : ''}
     </div>
-    ${r.ai ? `
-    <div class="report-section critical">
-      <h2 class="h4">Missed or incomplete</h2>
-      <ul>${list(ai.missedCritical, 'Nothing significant — nice work.')}</ul>
-    </div>
-    <div class="report-section strength">
-      <h2 class="h4">What you did well</h2>
-      <ul>${list(ai.strengths, '—')}</ul>
-    </div>` : ''}
     <div class="report-section">
       <h2 class="h4">Communication</h2>
       <ul class="checklist">${check(ev.comm)}</ul>
@@ -2257,13 +2414,13 @@ function renderReport(){
 
 function reportText(){
   const c = CASES[state.caseId];
-  const r = state.report, ev = r.ev, ai = r.ai || {}, p = ev.plan;
+  const r = state.report, ev = r.ev, p = ev.plan;
   const L = [];
   L.push('PRE-OP ASSESSMENT TRAINER — ENCOUNTER REPORT');
   L.push(`Patient: ${c.name}, ${ageSex(c)} — ${c.procedure}`);
   L.push(`Completed: ${new Date(r.finishedAt||Date.now()).toLocaleString()}`);
   L.push('', `OVERALL SCORE: ${ev.overall}/100`);
-  Object.entries(ev.domains).forEach(([k,d])=>L.push(`  ${domainName(k)}: ${d.score}/${d.max} — ${d.auto}${ai[k]?' '+ai[k]:''}`));
+  Object.entries(ev.domains).forEach(([k,d])=>L.push(`  ${domainName(k)}: ${d.score}/${d.max} — ${d.auto}`));
   L.push('', 'HISTORY CHECKLIST');
   ev.history.forEach(h=>L.push(`  [${h.hit?'x':' '}] ${h.label}${h.critical?' (KEY)':''}`));
   L.push('', 'EXAM MANEUVERS');
@@ -2276,12 +2433,7 @@ function reportText(){
   L.push(`  Risks missed: ${p.riskMissed.map(k=>optionLabel(RISK_OPTIONS,k)).join('; ')||'—'}`);
   if(p.riskExtra.length) L.push(`  Not supported by this case: ${p.riskExtra.map(k=>optionLabel(RISK_OPTIONS,k)).join('; ')}`);
   L.push(`  Written plan: ${p.planText||'—'}`);
-  if(ai.planFeedback) L.push(`  Feedback: ${ai.planFeedback}`);
   L.push(`  Expected reasoning: ${c.answer.why}`);
-  if(r.ai){
-    L.push('', 'MISSED OR INCOMPLETE'); (ai.missedCritical||[]).forEach(x=>L.push('  - '+x));
-    L.push('', 'STRENGTHS'); (ai.strengths||[]).forEach(x=>L.push('  - '+x));
-  }
   L.push('', 'COMMUNICATION');
   ev.comm.forEach(h=>L.push(`  [${h.hit?'x':' '}] ${h.label}`));
   L.push('', 'RED FLAG', '  '+c.redFlag);
