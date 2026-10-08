@@ -1461,7 +1461,7 @@ let state = {
   topicsAsked:{},      // scripted-patient topic -> times answered (for "Like I said…")
   misses:0,
   hint:null,
-  browserVoiceURI:'',
+  voicePick:{female:loadVoicePick('female'), male:loadVoicePick('male')}, // chosen voiceURI per patient sex ('' = best available)
   micStatus:null,
   listening:false,
   sending:false,
@@ -1872,6 +1872,17 @@ function renderLearn(){
     </div>
 
     ${refsHtml(PRIMER_REFS)}
+    <div class="asa-box" id="betterVoice">
+      <h2 class="h4" style="font-size:16px; margin-bottom:8px;">Getting a better patient voice</h2>
+      <div class="muted" style="font-size:13.5px; line-height:1.6; margin-bottom:8px;">The patient's voice comes from your device. Most devices include more natural voices — the site picks the best one it can find, and you can choose in the interview's ⚙️ settings.</div>
+      <ul style="margin:0; padding-left:18px; font-size:13.5px; line-height:1.7;">
+        <li><strong>iPhone / iPad:</strong> Settings → Accessibility → Spoken Content → Voices → English, and download an <em>Enhanced</em> or <em>Premium</em> voice (e.g., Ava, Zoe, Evan, Nathan). Then reopen the site.</li>
+        <li><strong>Mac:</strong> System Settings → Accessibility → Spoken Content → System Voice → Manage Voices, and download a Premium or Enhanced English voice.</li>
+        <li><strong>Windows:</strong> open the site in <strong>Microsoft Edge</strong>, which includes very natural "Online (Natural)" voices.</li>
+        <li><strong>Android:</strong> use Chrome, and in Settings → search "Text-to-speech" → choose Speech Services by Google → install voice data → English.</li>
+      </ul>
+    </div>
+
     <div class="brief-cta-row">
       <button class="back-link" id="backToSelectFromLearn">← Back to patient list</button>
     </div>
@@ -1909,9 +1920,14 @@ function renderInterview(){
         ${state.voiceSettingsOpen ? `
         <div class="voice-settings">
           <div class="vs-row">
-            <label for="browserVoiceSelect">Patient voice</label>
-            <select id="browserVoiceSelect">${voiceOptionsHtml()}</select>
+            <label for="voiceFemale">Female patient voice</label>
+            <select id="voiceFemale">${voiceOptionsHtml('female')}</select>
           </div>
+          <div class="vs-row">
+            <label for="voiceMale">Male patient voice</label>
+            <select id="voiceMale">${voiceOptionsHtml('male')}</select>
+          </div>
+          <div class="vs-hint">Voices come from your device. The best ones are listed first. For more natural voices, see "Getting a better voice" in the primer.</div>
           <div class="vs-actions">
             <button id="checkMicBtn"><span aria-hidden="true">🎙️ </span>Check microphone</button>
             <button id="testVoiceBtn"><span aria-hidden="true">▶ </span>Test voice</button>
@@ -1968,9 +1984,13 @@ function renderInterview(){
   document.getElementById('voiceToggle').addEventListener('click', ()=>{ state.voiceOn=!state.voiceOn; if(!state.voiceOn) stopSpeaking(); render(); });
   document.getElementById('voiceSettingsBtn').addEventListener('click', ()=>{ state.voiceSettingsOpen=!state.voiceSettingsOpen; render(); });
   if(state.voiceSettingsOpen){
-    const voiceSelect = document.getElementById('browserVoiceSelect');
-    voiceSelect.value = state.browserVoiceURI;
-    voiceSelect.addEventListener('change', e=>{ state.browserVoiceURI = e.target.value; });
+    [['voiceFemale','female'],['voiceMale','male']].forEach(([id,sex])=>{
+      document.getElementById(id).addEventListener('change', e=>{
+        state.voicePick[sex] = e.target.value;
+        saveVoicePick(sex, e.target.value);
+        speak(sex==='female' ? "Hi, this is how I'll sound." : "Hello, this is how I'll sound.", sex);
+      });
+    });
     document.getElementById('testVoiceBtn').addEventListener('click', ()=>{
       const sex = state.caseId ? speakerSex(CASES[state.caseId]) : 'female';
       speak("Hi there — this is what I'll sound like during your interview.", sex);
@@ -2136,11 +2156,55 @@ async function handleHistoryMessage(text){
   if(state.voiceOn){ speak(r.text, speakerSex(c)); }
 }
 
-function voiceOptionsHtml(){
-  const voices = speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));
-  const list = voices.length ? voices : speechSynthesis.getVoices();
-  let opts = `<option value="">Auto (best available)</option>`;
-  opts += list.map(v=>`<option value="${v.voiceURI}" ${state.browserVoiceURI===v.voiceURI?'selected':''}>${v.name} (${v.lang})</option>`).join('');
+/* Device voices vary a lot in quality. Rank them so the most natural ones are used:
+   neural/"Natural" (Edge, Windows), Premium/Enhanced (Apple, once downloaded), Google
+   (Chrome), and skip Apple's novelty voices (Fred, Zarvox, Bubbles…), which sound robotic. */
+const FEMALE_VOICE = /(female|woman|zira|samantha|victoria|aria|jenny|michelle|emma|libby|sonia|natasha|clara|karen|moira|tessa|fiona|serena|susan|allison|\bava\b|nicky|joanna|salli|kimberly|kendra|zoe|evan?gelin|google us english)/i;
+const MALE_VOICE = /(\bmale\b|\bman\b|david|daniel|\balex\b|guy|davis|aaron|arthur|gordon|rishi|oliver|\btom\b|mark|james|george|matthew|joey|justin|eric|christopher|andrew|brian|roger|steffan|ryan|thomas|william|nathan|evan\b)/i;
+const NOVELTY_VOICE = /(albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|junior|ralph|kathy|\bfred\b|grandma|grandpa|eddy|\bflo\b|\breed\b|rocko|sandy|shelley)/i;
+function voiceGender(v){
+  const n = v.name;
+  if(FEMALE_VOICE.test(n)) return 'female';
+  if(MALE_VOICE.test(n)) return 'male';
+  return '';
+}
+function voiceScore(v){
+  const id = v.name + ' ' + v.voiceURI;
+  let q = 0;
+  if(/(natural|neural)/i.test(id)) q += 60;
+  if(/premium/i.test(id)) q += 55;
+  if(/enhanced/i.test(id)) q += 50;
+  if(/google/i.test(id)) q += 30;
+  if(/online/i.test(id)) q += 10;
+  if(/^en[-_]us/i.test(v.lang)) q += 5; else if(/^en[-_](gb|au|ca|ie|nz)/i.test(v.lang)) q += 3;
+  return q;
+}
+function rankedVoices(sex){
+  if(typeof speechSynthesis === 'undefined') return [];
+  const all = speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang) && !NOVELTY_VOICE.test(v.name));
+  const other = sex==='female' ? 'male' : 'female';
+  const usable = all.filter(v=>voiceGender(v)!==other);
+  return (usable.length ? usable : all)
+    .map(v=>({v, score: voiceScore(v) + (voiceGender(v)===sex ? 20 : 0)}))
+    .sort((a,b)=>b.score-a.score)
+    .map(x=>x.v);
+}
+function pickVoice(sex){
+  const want = state.voicePick && state.voicePick[sex];
+  if(want){
+    const v = speechSynthesis.getVoices().find(v=>v.voiceURI===want);
+    if(v) return v;
+  }
+  return rankedVoices(sex)[0] || null;
+}
+function loadVoicePick(sex){ try{ return localStorage.getItem('preop_voice_'+sex) || ''; }catch(e){ return ''; } }
+function saveVoicePick(sex, uri){ try{ uri ? localStorage.setItem('preop_voice_'+sex, uri) : localStorage.removeItem('preop_voice_'+sex); }catch(e){} }
+
+function voiceOptionsHtml(sex){
+  const list = rankedVoices(sex);
+  const best = list[0];
+  let opts = `<option value="">Best available${best ? ' ('+escapeHtml(best.name)+')' : ''}</option>`;
+  opts += list.map(v=>`<option value="${escapeAttr(v.voiceURI)}" ${state.voicePick[sex]===v.voiceURI?'selected':''}>${escapeHtml(v.name)} (${v.lang})</option>`).join('');
   return opts;
 }
 if(typeof speechSynthesis !== 'undefined'){
@@ -2189,23 +2253,13 @@ function speak(text, sex){
   speakBrowser(text, sex);
 }
 
-const FEMALE_VOICE = /(female|zira|samantha|victoria|aria|jenny|karen|moira|tessa|fiona|serena|susan|allison|ava|nicky|joanna|salli|kimberly)/i;
-const MALE_VOICE = /(\bmale\b|david|daniel|alex|guy|davis|fred|aaron|arthur|gordon|rishi|oliver|\btom\b|mark|james|george|matthew|joey|justin)/i;
 function speakBrowser(text, sex){
   try{
     speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
-    const voices = speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));
-    let chosen=null;
-    if(state.browserVoiceURI){ chosen = speechSynthesis.getVoices().find(v=>v.voiceURI===state.browserVoiceURI); }
-    if(!chosen){
-      // "Female" contains "male", so a male voice must also not match the female list
-      chosen = voices.find(v=> sex==='female'
-        ? FEMALE_VOICE.test(v.name)
-        : MALE_VOICE.test(v.name) && !FEMALE_VOICE.test(v.name));
-    }
-    if(chosen) utter.voice = chosen;
-    utter.rate = 1.0;
+    const chosen = pickVoice(sex);
+    if(chosen){ utter.voice = chosen; utter.lang = chosen.lang; }
+    utter.rate = 0.95;  // slightly slower than default sounds less clipped
     speechSynthesis.speak(utter);
   }catch(e){/* speech synthesis not available, ignore */}
 }
